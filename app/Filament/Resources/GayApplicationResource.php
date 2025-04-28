@@ -92,6 +92,7 @@ class GayApplicationResource extends Resource
                     '>" . ucfirst($state) . "</span>";
                 }),
             ])
+            ->defaultSort('queueNumber.queue_number','desc')
             ->defaultPaginationPageOption(5)
             ->actions([
                 
