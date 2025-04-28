@@ -65,7 +65,7 @@ class TelegramWebhookController extends Controller
 
             $queueText = $last_queue
                 ? 'Акыргы болуп №' . $last_queue->queueNumber->queue_number . ' кирди'
-                : 'Хали очеред йозилган йок';
+                : 'Еле ешким кирген жок';
 
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
