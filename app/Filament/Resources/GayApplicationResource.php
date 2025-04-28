@@ -95,57 +95,6 @@ class GayApplicationResource extends Resource
             ])
             ->defaultPaginationPageOption(5)
             ->actions([
-                
-                // Action::make('active')
-                //     ->label('Актив')
-                //     ->color('success')
-                //     ->icon('fas-circle-check')
-                //     ->action(function (GayApplication $record) {
-                        
-                //             // Navbat raqamini olish: eng kichik bo'lmagan raqamni olish
-                //             $lastQueueNumber = QueueNumber::max('queue_number'); // Oxirgi navbat raqamini olamiz
-                //             $nextQueueNumber = $lastQueueNumber + 1; // Keyingi raqamni olish
-                    
-                //             // Yangi navbat raqamini yaratish
-                //             QueueNumber::create([
-                //                 'customer_id' => $record->customer_id,
-                //                 'gay_application_id' => $record->id,
-                //                 'queue_number' => $nextQueueNumber,
-                //             ]);
-                    
-                //             $customer = Customer::find($record->customer_id);
-                //             $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-                //             $telegram->sendMessage([
-                //                 'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                //                 'text' => "✅ Сизиң дизимнен өтиў сораўыңыз тастыйықланды!\n\nНәўбет номериңиз: $nextQueueNumber",
-                //             ]);
-                //         $record->update(['status_id' => 2]);
-                //             Notification::make()
-                //             ->title('Buyurtma holati yangilandi')
-                //             ->success()
-                //             ->send();
-                //     })
-                //     ->visible(fn (GayApplication $record): bool => $record->status_id == 1),
-
-                //     Action::make('cancelled')
-                //     ->label('Деактив')
-                //     ->color('danger')
-                //     ->icon('fas-circle-check')
-                //     ->action(function (GayApplication $record) {
-                        
-                //         $customer = Customer::find($record->customer_id);
-                //         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-                //         $telegram->sendMessage([
-                //             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                //             'text' => "❌ Сизиң дизимнен өтиў сораўыңыз бийкар етилди!",
-                //         ]);
-                //         $record->update(['status_id' => 4]);
-                //             Notification::make()
-                //             ->title('Buyurtma holati yangilandi')
-                //             ->success()
-                //             ->send();
-                //     })
-                //     ->visible(fn (GayApplication $record): bool => $record->status_id == 1),
                 ViewAction::make()->label('Квитанцияни кориу')->url(fn ($record) => route('gay-application.view', ['record' => $record->id]))
             ])
             ->filters([
@@ -187,27 +136,31 @@ class GayApplicationResource extends Resource
                                     foreach ($records as $record) {
                                         $record->update(['status_id' => 2]); // 2 - active
                                         $lastQueueNumber = QueueNumber::max('queue_number'); // Oxirgi navbat raqamini olamiz
-                                        $nextQueueNumber = $lastQueueNumber + 1; // Keyingi raqamni olish
+                                        $myQueueNumber = $lastQueueNumber + 1; // Keyingi raqamni olish
                                 
                                         // Yangi navbat raqamini yaratish
                                         QueueNumber::create([
                                             'customer_id' => $record->customer_id,
                                             'gay_application_id' => $record->id,
-                                            'queue_number' => $nextQueueNumber,
+                                            'queue_number' => $myQueueNumber,
                                         ]);
                                         // Foydalanuvchiga navbat raqami yuborish
                                         $customer = Customer::find($record->customer_id);
                                         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-                                        $last_queue = GayApplication::whereHas('status', function (Builder $query) {
+                                        $lastQueue = GayApplication::whereHas('status', function (Builder $query) {
                                             $query->where('key', '=', 'completed');
                                         })->latest()->first();
-                                        $QueueNumber = $last_queue
-                                            ? $last_queue->queueNumber->queue_number
-                                            : 0;
-                                        $activeCount=$nextQueueNumber-$QueueNumber;
+                                        $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
+
+                                        $waitingCount = GayApplication::whereHas('status', function (Builder $query) {
+                                            $query->where('key', '=','active');
+                                        })->whereHas('queueNumber', function (Builder $query) use ($lastQueueNumber, $myQueueNumber) {
+                                            $query->where('queue_number', '>', $lastQueueNumber)
+                                                  ->where('queue_number', '<', $myQueueNumber);
+                                        })->count();
                                         $telegram->sendMessage([
                                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                                            'text' => "✅ Сизиң дизимнен өтиў сораўыңыз тастыйықланды!\n\nНәўбет номериңиз: №$nextQueueNumber\n📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\nАқырғы кирген наўбет:№$QueueNumber\nСиздиң алдыңызда $activeCount пуҳара бар\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
+                                            'text' => "✅ Сизиң дизимнен өтиў сораўыңыз тастыйықланды!\n\nНәўбет номериңиз: №$myQueueNumber\n📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\nАқырғы кирген наўбет:№$lastQueueNumber\nСиздиң алдыңызда $waitingCount пуҳара бар\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
                                         ]);
                                     }
                         
