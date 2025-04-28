@@ -204,10 +204,12 @@ class TelegramWebhookController extends Controller
             Cache::forget("user:{$chatId}:fileName");
             Cache::forget("user:{$chatId}:number");
             Cache::forget("user:{$chatId}:id");
+            $removeKeyboard = Keyboard::remove();
 
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => $messageText,
+                'reply_markup'=>$removeKeyboard
             ]);
         }
         if($step === 'new_queue' && $text==='Яқ наўбетимде қаламан'){
@@ -220,10 +222,12 @@ class TelegramWebhookController extends Controller
             Cache::forget("user:{$chatId}:fileName");
             Cache::forget("user:{$chatId}:number");
             Cache::forget("user:{$chatId}:id");
+            $removeKeyboard = Keyboard::remove();
 
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => "Сиздин №$number наубетиниз оз орнында калды",
+                'reply_markup'=>$removeKeyboard
             ]);
             
         }
