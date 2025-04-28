@@ -21,7 +21,7 @@ class TelegramWebhookController extends Controller
         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
         $update = $telegram->getWebhookUpdate();
 
-        $text=$update->getMessage()->getText();
+        $text = $update->getMessage()?->getText();
         $message = $update->getMessage();
         $chatId = $message?->getChat()?->id;
         if (!$chatId) return;
@@ -29,110 +29,125 @@ class TelegramWebhookController extends Controller
         $phone = Cache::get("user:{$chatId}:phone");
         $name = Cache::get("user:{$chatId}:name");
         $passport = Cache::get("user:{$chatId}:passport");
+        $step = Cache::get("user:{$chatId}:step");
 
-        // 1. Contact bosqichi
+        // 1. Telefon yuborgan bo'lsa
         if ($message->has('contact')) {
             $phone = $message->contact->phone_number;
-            $user = $message->getFrom();
+
+            Cache::put("user:{$chatId}:phone", $phone, 600);
+            Cache::forget("user:{$chatId}:name");
+            Cache::forget("user:{$chatId}:passport");
+            Cache::forget("user:{$chatId}:step");
+
             $keyboard = Keyboard::make()
                 ->setResizeKeyboard(true)
                 ->setOneTimeKeyboard(false)
                 ->row([
+                    Keyboard::button(['text' => '📋 Нәўбетке жазылыу']),
+                ])->row([
                     Keyboard::button(['text' => '📋 Нәўбетти көриў']),
                     Keyboard::button(['text' => '👨‍💼 Админ менен байланысыў']),
                 ]);
 
-            Cache::put("user:{$chatId}:phone", $phone, 600);
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
-                'text' => 'Илтимас, толық атыңызды киргизиң:',
+                'text' => 'Керекли әмелди таңлаң:',
                 'reply_markup' => $keyboard,
             ]);
         }
+
+        // 2. Navbatni korish
         if ($text === '📋 Нәўбетти көриў') {
-            $last_queue=GayApplication::whereHas('status', function (Builder $query) {
+            $last_queue = GayApplication::whereHas('status', function (Builder $query) {
                 $query->where('key', '=', 'completed');
             })->latest()->first();
-            if($last_queue){
-                return $telegram->sendMessage([
-                    'chat_id' => $chatId,
-                    'text' => 'Акыргы болып №'.$last_queue->queueNumber->queue_number.' кирди',
-                ]);
-            }else{
-                return $telegram->sendMessage([
-                    'chat_id' => $chatId,
-                    'text' => 'Хали очеред йозилган йок',
-                ]);
-            }
-        }
-        // 2. FIO bosqichi
-        if ($phone && !$name) {
-            Cache::put("user:{$chatId}:name", $message->text, 600);
-            return $this->reply($telegram, $chatId, 'Паспорт серия ҳәм номериңизди киргизиң:');
+
+            $queueText = $last_queue
+                ? 'Акыргы болуп №' . $last_queue->queueNumber->queue_number . ' кирди'
+                : 'Хали очеред йозилган йок';
+
+            return $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => $queueText,
+            ]);
         }
 
-        // 3. Pasport bosqichi
-        if ($phone && $name && !$passport) {
-            Cache::put("user:{$chatId}:passport", $message->text, 600);
-            return $this->reply($telegram, $chatId, "📷 Айдаўшылық гүўалығын алыў ушын төленген квитанцияны жибериң.");
+        // 3. Navbat olish
+        if ($text === '📋 Нәўбетке жазылыу') {
+            Cache::put("user:{$chatId}:step", "awaiting_name", 600);
+
+            return $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Илтимас, толық атыңызды киргизиң:',
+            ]);
         }
 
-        // 4. Rasm qabul qilish bosqichi
-        if ($phone && $name && $passport && $message->getPhoto()) {
+        // 4. Step bo'yicha harakat qilish
+        if ($step === 'awaiting_name') {
+            Cache::put("user:{$chatId}:name", $text, 600);
+            Cache::put("user:{$chatId}:step", "awaiting_passport", 600);
+
+            return $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Паспорт серия ҳәм номериңизди киргизиң:',
+            ]);
+        }
+
+        if ($step === 'awaiting_passport') {
+            Cache::put("user:{$chatId}:passport", $text, 600);
+            Cache::put("user:{$chatId}:step", "awaiting_photo", 600);
+
+            return $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => '📷 Айдаўшылық гүўалығын алыў ушын төленген квитанцияны жибериң.',
+            ]);
+        }
+
+        if ($step === 'awaiting_photo' && $message->getPhoto()) {
             $fileName = $this->saveTelegramPhoto($message->getPhoto());
 
             $customer = Customer::where('phone_number', $phone)->first();
-            if ($customer) {
-                $exists = GayApplication::where('customer_id', $customer->id)
-                ->where('status_id', 2)
-                ->orWhere('status_id',1)
-                ->exists();
-            
-                if (!$exists) {
-                    GayApplication::create([
-                        'customer_id' => $customer->id,
-                        'document_path' => $fileName,
-                        'status_id' => 1
-                    ]);
-                    
-                    $telegram->sendMessage([
-                        'chat_id' => $chatId,
-                        'text' => "✅ Сиз табыслы дизимнен өттиңиз:\n\n📱 Телефон: $phone\n👤 ФИО: $name\n🆔 Паспорт: $passport\n🔴 Статус: Ожидает подтверждение"
-                    ]);
-                }else{
-                    $telegram->sendMessage([
-                        'chat_id' => $chatId,
-                        'text' => "❌ Сизде алдын актив жазылыў бар."
-                    ]);
-                }
-
-            }else{
-                $new_customer=Customer::create([
+            if (!$customer) {
+                $customer = Customer::create([
                     'telegram_user_id' => $chatId,
                     'phone_number' => $phone,
                     'full_name' => $name,
                     'passport' => strtoupper($passport),
                 ]);
-                
-                    GayApplication::create([
-                        'customer_id' => $new_customer->id,
-                        'document_path' => $fileName,
-                        'status_id' => 1
-                    ]); 
-                    $telegram->sendMessage([
-                        'chat_id' => $chatId,
-                        'text' => "✅ Сиз табыслы дизимнен өттиңиз:\n\n📱 Телефон: $phone\n👤 ФИО: $name\n🆔 Паспорт: $passport\n🔴 Статус: Ожидает подтверждение"
-                    ]);  
-                     
             }
 
+            $exists = GayApplication::where('customer_id', $customer->id)
+                ->whereIn('status_id', [1, 2])
+                ->exists();
+
+            if (!$exists) {
+                GayApplication::create([
+                    'customer_id' => $customer->id,
+                    'document_path' => $fileName,
+                    'status_id' => 1,
+                ]);
+
+                $messageText = "✅ Сиз табыслы дизимнен өттиңиз:\n\n📱 Телефон: $phone\n👤 ФИО: $name\n🆔 Паспорт: $passport\n🔴 Статус: Ожидает подтверждение";
+            } else {
+                $messageText = "❌ Сизде алдын актив жазылыў бар.";
+            }
+
+            // Tozalash
+            Cache::forget("user:{$chatId}:step");
             Cache::forget("user:{$chatId}:name");
             Cache::forget("user:{$chatId}:passport");
+
+            return $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => $messageText,
+            ]);
         }
 
         Telegram::commandsHandler(true);
         return 'ok';
     }
+
 
     // ✅ Tezkor xabar yuborish
     private function reply($telegram, $chatId, $text)
