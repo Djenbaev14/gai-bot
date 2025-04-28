@@ -212,7 +212,7 @@ class TelegramWebhookController extends Controller
         }
         if($step === 'new_queue' && $text==='Яқ наўбетимде қаламан'){
 
-            $number=Cache::get("user:{$chatId}:id");
+            $number=Cache::get("user:{$chatId}:number");
 
             Cache::forget("user:{$chatId}:step");
             Cache::forget("user:{$chatId}:name");
