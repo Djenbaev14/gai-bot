@@ -227,7 +227,7 @@ class TelegramWebhookController extends Controller
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => "Сиздин №$number наубетиниз оз орнында калды",
-                'reply_markup'=>$removeKeyboard
+                // 'reply_markup'=>$removeKeyboard
             ]);
             
         }
