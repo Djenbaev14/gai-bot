@@ -60,6 +60,7 @@ class GayApplicationResource extends Resource
                 ])
             ]);
     }
+    
 
     public static function table(Table $table): Table
     {
@@ -67,8 +68,7 @@ class GayApplicationResource extends Resource
             ->columns([
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
@@ -93,6 +93,7 @@ class GayApplicationResource extends Resource
                     '>" . ucfirst($state) . "</span>";
                 }),
             ])
+            ->defaultSort('created_at','asc')
             ->defaultPaginationPageOption(5)
             ->actions([
                 ViewAction::make()->label('Квитанцияни кориу')->url(fn ($record) => route('gay-application.view', ['record' => $record->id]))
