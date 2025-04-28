@@ -18,7 +18,7 @@ use Telegram\Bot\Laravel\Facades\Telegram;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('admin');
 });
 
 Route::post('/webhook/telegram', [TelegramWebhookController::class, 'handle']);
