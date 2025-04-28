@@ -67,7 +67,8 @@ class GayApplicationResource extends Resource
             ->columns([
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable('asc'),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
@@ -92,7 +93,6 @@ class GayApplicationResource extends Resource
                     '>" . ucfirst($state) . "</span>";
                 }),
             ])
-            ->defaultSort('queueNumber.queue_number','desc')
             ->defaultPaginationPageOption(5)
             ->actions([
                 
