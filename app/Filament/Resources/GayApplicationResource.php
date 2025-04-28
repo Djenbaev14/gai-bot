@@ -197,9 +197,16 @@ class GayApplicationResource extends Resource
                                         // Foydalanuvchiga navbat raqami yuborish
                                         $customer = Customer::find($record->customer_id);
                                         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
+                                        $last_queue = GayApplication::whereHas('status', function (Builder $query) {
+                                            $query->where('key', '=', 'completed');
+                                        })->latest()->first();
+                                        $QueueNumber = $last_queue
+                                            ? '№'.$last_queue->queueNumber->queue_number
+                                            : 'Еле ешким кирген жок';
+                                        $activeCount=$nextQueueNumber-$QueueNumber;
                                         $telegram->sendMessage([
                                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                                            'text' => "✅ Сизиң дизимнен өтиў сораўыңыз тастыйықланды!\n\nНәўбет номериңиз: $nextQueueNumber",
+                                            'text' => "✅ Сизиң дизимнен өтиў сораўыңыз тастыйықланды!\n\nНәўбет номериңиз: №$nextQueueNumber\n📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\nАқырғы кирген наўбет:№$QueueNumber\nСиздиң алдыңызда $activeCount пуҳара бар\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
                                         ]);
                                     }
                         
@@ -259,7 +266,7 @@ class GayApplicationResource extends Resource
                                     $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
                                     $telegram->sendMessage([
                                         'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                                        'text' => "❌ тестке келмегенинз ушын наубет номериниз бийкар етилди!",
+                                        'text' => "❌ Имтиханға келмегениңиз  ушын наўбет  бийкар етилди, қайталдан наўбет алың!",
                                     ]);
                                 }
                     

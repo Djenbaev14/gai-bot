@@ -30,7 +30,7 @@ class StartCommand extends Command
 
             // Foydalanuvchiga xabar va tugma yuboramiz
             $this->replyWithMessage([
-                'text' => "Хош келдиңиз! Телефон номериңизди жибериў ушын төмендеги түймени басың.",
+                'text' => "Айдаўшылық имтиҳаны ушын наўбет алыў ботына хош келибсиз !\nНаўбет алыў ушын төмендеги түймени басың",
                 'reply_markup' => $keyboard,
             ]);
 
