@@ -68,7 +68,7 @@ class GayApplicationResource extends Resource
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
                     ->searchable()
-                    ->sortable('asc'),
+                    ->sortable(),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
