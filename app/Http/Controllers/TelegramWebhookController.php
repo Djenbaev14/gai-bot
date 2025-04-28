@@ -107,7 +107,7 @@ class TelegramWebhookController extends Controller
         if ($step === 'awaiting_photo' && $message->getPhoto()) {
             $fileName = $this->saveTelegramPhoto($message->getPhoto());
 
-            $customer = Customer::where('phone_number', $phone)->first();
+            $customer = Customer::where('telegram_user_id', $chatId)->first();
             if (!$customer) {
                 $customer = Customer::create([
                     'telegram_user_id' => $chatId,
