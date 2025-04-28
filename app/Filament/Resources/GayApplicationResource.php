@@ -75,6 +75,9 @@ class GayApplicationResource extends Resource
                 TextColumn::make('customer.passport')
                     ->label('Паспорт')
                     ->searchable(),
+                TextColumn::make('customer.phone_number')
+                    ->label('Телефон')
+                    ->searchable(),
                 TextColumn::make('status.name')
                     ->label('Статус'),
                     
