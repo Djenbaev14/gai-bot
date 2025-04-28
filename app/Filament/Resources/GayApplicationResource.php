@@ -201,8 +201,8 @@ class GayApplicationResource extends Resource
                                             $query->where('key', '=', 'completed');
                                         })->latest()->first();
                                         $QueueNumber = $last_queue
-                                            ? '№'.$last_queue->queueNumber->queue_number
-                                            : 'Еле ешким кирген жок';
+                                            ? $last_queue->queueNumber->queue_number
+                                            : 0;
                                         $activeCount=$nextQueueNumber-$QueueNumber;
                                         $telegram->sendMessage([
                                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
