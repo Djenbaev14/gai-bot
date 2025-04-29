@@ -78,12 +78,12 @@ class TelegramWebhookController extends Controller
                 $query->where('queue_number', '>', $lastQueueNumber)
                       ->where('queue_number', '<', $myQueueNumber);
             })->count();
-            $waiting=$waitingCount>0 ? "Сиздиң алдыңызда $waitingCount пуҳара бар": "Сиздиң алдыңызда ешким жок";
-            $lastQueueText=$lastQueueNumber>0 ? "Ақырғы кирген наўбет:№$lastQueueNumber": "Еле ешким тестке кирген жок";
+            $waiting=$waitingCount>0 ? "❇️ Сиздиң алдыңызда $waitingCount пуҳара бар": "Сиздиң алдыңызда ешким жок";
+            $lastQueueText=$lastQueueNumber>0 ? "✅ Ақырғы кирген наўбет:  № $lastQueueNumber": "Еле ешким тестке кирген жок";
 
             $telegram->sendMessage([
                 'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
-                'text' => "✅ Сизиң дизимнен өтиў сораўыңыз тастыйықланды!\n\nНәўбет номериңиз: №$myQueueNumber\n📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
+                'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
             ]);
         }
 
