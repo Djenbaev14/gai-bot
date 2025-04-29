@@ -44,6 +44,9 @@ class ActiveGayAppResource extends Resource
                     ->where('status_id',2) 
             )
             ->columns([
+                Tables\Columns\ImageColumn::make('document_path')
+                    ->label('Квитанция')
+                    ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
                     ->searchable(),
