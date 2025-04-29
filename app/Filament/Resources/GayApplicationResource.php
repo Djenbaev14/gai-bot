@@ -80,7 +80,7 @@ class GayApplicationResource extends Resource
                     ->label('ФИО')
                     ->searchable(),
                 TextColumn::make('created_at')
-                    ->label('Yaratilgan')
+                    ->label('Дата')
                     ->dateTime('d.m.Y H:i'), // Misol: 29.04.2025 15:42
                 TextColumn::make('customer.passport')
                     ->label('Паспорт')
