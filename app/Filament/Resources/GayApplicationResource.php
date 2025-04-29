@@ -72,6 +72,8 @@ class GayApplicationResource extends Resource
                     ->where('status_id',1) 
             )
             ->columns([
+                Tables\Columns\ImageColumn::make('document_path')
+    ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
