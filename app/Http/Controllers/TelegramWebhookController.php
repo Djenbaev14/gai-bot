@@ -64,27 +64,36 @@ class TelegramWebhookController extends Controller
         // 2. Navbatni korish
         if ($text === '📋 Наўбетти тексериў') {
 
-            // Foydalanuvchiga navbat raqami yuborish
             $customer = Customer::where('telegram_user_id','=',$chatId)->first();
-            $myQueueNumber=GayApplication::where('customer_id',$customer->id)->latest()->first()->queueNumber->queue_number;
+            $myQueue=GayApplication::where('customer_id',$customer->id)->where('status_id',2)->latest()->first();
+            Log::info($myQueue);
             $lastQueue = GayApplication::whereHas('status', function (Builder $query) {
                 $query->where('key', '=', 'completed');
             })->latest()->first();
             $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
 
-            $waitingCount = GayApplication::whereHas('status', function (Builder $query) {
-                $query->where('key', '=','active');
-            })->whereHas('queueNumber', function (Builder $query) use ($lastQueueNumber, $myQueueNumber) {
-                $query->where('queue_number', '>', $lastQueueNumber)
-                      ->where('queue_number', '<', $myQueueNumber);
-            })->count();
-            $waiting=$waitingCount>0 ? "❇️ Сиздиң алдыңызда $waitingCount пуҳара бар": "Сиздиң алдыңызда ешким жок";
             $lastQueueText=$lastQueueNumber>0 ? "✅ Ақырғы кирген наўбет:  № $lastQueueNumber": "Еле ешким тестке кирген жок";
-
-            $telegram->sendMessage([
-                'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
-                'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
-            ]);
+            if($myQueue){
+                $myQueueNumber=$myQueue->queueNumber->queue_number;
+                $waitingCount = GayApplication::whereHas('status', function (Builder $query) {
+                    $query->where('key', '=','active');
+                })->whereHas('queueNumber', function (Builder $query) use ($lastQueueNumber, $myQueueNumber) {
+                    $query->where('queue_number', '>', $lastQueueNumber)
+                          ->where('queue_number', '<', $myQueueNumber);
+                })->count();
+                $waiting=$waitingCount>0 ? "❇️ Сиздиң алдыңызда $waitingCount пуҳара бар": "Сиздиң алдыңызда ешким жок";
+                
+                $telegram->sendMessage([
+                    'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
+                    'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
+                ]);
+            }else{
+                $text='⭕️ Сизде актив наубет жок';
+                $telegram->sendMessage([
+                    'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
+                    'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n$text\n\n$lastQueueText\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
+                ]);
+            }
         }
 
         if ($text === '✍️ Наўбетке жазылыў') {

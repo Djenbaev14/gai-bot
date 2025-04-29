@@ -21,4 +21,8 @@ class GayApplication extends Model
     public function queueNumber(){
         return $this->hasOne(QueueNumber::class);
     }
+    public function getQueueNumberValueAttribute()
+    {
+        return $this->queueNumber?->queue_number;
+    }
 }
