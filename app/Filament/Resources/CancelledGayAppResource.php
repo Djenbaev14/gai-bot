@@ -28,7 +28,6 @@ class CancelledGayAppResource extends Resource
     protected static ?string $navigationGroup = 'Очередь';
     protected static ?int $navigationSort = 4;
 
-
     public static function form(Form $form): Form
     {
         return $form
@@ -69,7 +68,10 @@ class CancelledGayAppResource extends Resource
                 //
             ]);
     }
-
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     public static function getNavigationBadge(): ?string
     {
         return (string) GayApplication::where('status_id', 4)->count();

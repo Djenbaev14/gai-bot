@@ -36,17 +36,15 @@ class CompletedGayAppResource extends Resource
                 //
             ]);
     }
-
+    
     public static function table(Table $table): Table
     {
         return $table
             ->query(
                 GayApplication::query()
-                    ->where('status_id',5) 
+                    ->where('status_id',3) 
             )
             ->columns([
-                // Tables\Columns\SelectColumn::make('queueNumber.queue_number')
-                // ->label('⛭'),
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
                     ->searchable(),
