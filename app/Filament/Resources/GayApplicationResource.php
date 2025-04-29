@@ -79,6 +79,9 @@ class GayApplicationResource extends Resource
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
+                TextColumn::make('created_at')
+                    ->label('Yaratilgan')
+                    ->dateTime('d.m.Y H:i'), // Misol: 29.04.2025 15:42
                 TextColumn::make('customer.passport')
                     ->label('Паспорт')
                     ->searchable(),
