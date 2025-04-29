@@ -34,7 +34,10 @@ class TelegramWebhookController extends Controller
         // 1. Telefon yuborgan bo'lsa
         if ($message->has('contact')) {
             $phone = $message->contact->phone_number;
-
+            $newCustomer=Customer::updateOrCreate([
+                'telegram_user_id'=>$chatId,
+                'phone_number'=>$phone
+            ]);
             Cache::put("user:{$chatId}:phone", $phone, 600);
             Cache::forget("user:{$chatId}:name");
             Cache::forget("user:{$chatId}:passport");
@@ -142,10 +145,8 @@ class TelegramWebhookController extends Controller
                 ]);
             }
             $customer = Customer::where('telegram_user_id', $chatId)->first();
-            if (!$customer) {
-                $customer = Customer::create([
-                    'telegram_user_id' => $chatId,
-                    'phone_number' => $phone,
+            if ($customer->full_name === null) {
+                $customer->update([
                     'full_name' => $name,
                     'passport' => strtoupper($passport),
                 ]);
