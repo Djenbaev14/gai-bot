@@ -18,8 +18,8 @@ class DatabaseSeeder extends Seeder
         
         User::create([
             'name' => 'Admin User',
-            'login' => 'admin',
-            'password' => Hash::make('admin'),
+            'login' => 'gai',
+            'password' => Hash::make('g2023@@'),
         ]);
         Status::create([
             'name'=>'Ожидает подтверждение',
