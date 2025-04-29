@@ -139,14 +139,6 @@ class TelegramWebhookController extends Controller
                     'text' => '❌ Суурет жиберин',
                 ]);
             }
-
-            $keyboard = Keyboard::make()
-            ->setResizeKeyboard(true)
-            ->setOneTimeKeyboard(false)
-            ->row([
-                Keyboard::button(['text' => '✍️ Наўбетке жазылыў']),
-                Keyboard::button(['text' => '📋 Наўбетти тексериў']),
-            ]);
             $customer = Customer::where('telegram_user_id', $chatId)->first();
             if (!$customer) {
                 $customer = Customer::create([
@@ -179,7 +171,6 @@ class TelegramWebhookController extends Controller
                 return $telegram->sendMessage([
                     'chat_id' => $chatId,
                     'text' => $messageText,
-                    'reply_markup'=>$keyboard
                 ]);
             } else {
                 $gay_application=GayApplication::where('customer_id', $customer->id)
@@ -214,7 +205,13 @@ class TelegramWebhookController extends Controller
                     Cache::forget("user:{$chatId}:step");
                     Cache::forget("user:{$chatId}:name");
                     Cache::forget("user:{$chatId}:passport");
-        
+                    $keyboard = Keyboard::make()
+                    ->setResizeKeyboard(true)
+                    ->setOneTimeKeyboard(false)
+                    ->row([
+                        Keyboard::button(['text' => '✍️ Наўбетке жазылыў']),
+                        Keyboard::button(['text' => '📋 Наўбетти тексериў']),
+                    ]);
         
                     return $telegram->sendMessage([
                         'chat_id' => $chatId,
