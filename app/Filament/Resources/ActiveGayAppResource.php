@@ -65,9 +65,9 @@ class ActiveGayAppResource extends Resource
                     ->button()
                     ->color('primary')
                     ->requiresConfirmation()
-                    ->modalHeading('Tasdiqlaysizmi?')
-                    ->modalSubheading('Rostan ham ushbu amalni bajarishni xohlaysizmi?')
-                    ->modalButton('Ha, tasdiqlayman')
+                    ->modalHeading(fn ($record) => "$record->queue_number_value номер акыргы кирди дурыспа ?")
+                    // ->modalSubheading('Rostan ham ushbu amalni bajarishni xohlaysizmi?')
+                    ->modalButton('Ауа, тастыйклайман')
                     ->icon('fas-flag')
                     ->action(function (GayApplication $record) {
                         $queueNumber = QueueNumber::where('gay_application_id', $record->id)->first();
@@ -92,9 +92,9 @@ class ActiveGayAppResource extends Resource
                         ->color('danger')
                         ->button()
                         ->requiresConfirmation()
-                        ->modalHeading('Tasdiqlaysizmi?')
-                        ->modalSubheading('Rostan ham ushbu amalni bajarishni xohlaysizmi?')
-                        ->modalButton('Ha, tasdiqlayman')
+                        ->modalHeading(fn ($record) => "$record->queue_number_value номер ди бийкарлайжаксызба ?")
+                        // ->modalSubheading('Rostan ham ushbu amalni bajarishni xohlaysizmi?')
+                        ->modalButton('Ауа, тастыйклайман')
                         ->icon('fas-circle-xmark')
                         ->action(function (GayApplication $record) {
                             
