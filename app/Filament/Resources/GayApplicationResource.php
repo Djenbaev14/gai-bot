@@ -21,6 +21,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -73,7 +74,8 @@ class GayApplicationResource extends Resource
             )
             ->columns([
                 Tables\Columns\ImageColumn::make('document_path')
-    ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
+                ->label('Квитанция')
+                ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
@@ -83,23 +85,6 @@ class GayApplicationResource extends Resource
                 TextColumn::make('customer.phone_number')
                     ->label('Телефон')
                     ->searchable(),
-                // TextColumn::make('status.name')
-                //     ->label('Статус'),
-                    
-                // TextColumn::make('status.name')
-                // ->label('Статус')
-                // ->html()
-                // ->formatStateUsing(function ($state, $record) {
-                //     $color = $record->status->color ?? '#999';
-                //     return "<span style='
-                //         background-color: {$color};
-                //         color: white;
-                //         padding: 4px 8px;
-                //         border-radius: 8px;
-                //         font-size: 12px;
-                //         display: inline-block;
-                //     '>" . ucfirst($state) . "</span>";
-                // }),
             ])
             ->defaultSort('created_at','asc')
             ->defaultPaginationPageOption(25)
@@ -141,7 +126,7 @@ class GayApplicationResource extends Resource
             
                         $telegram->sendMessage([
                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                            'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
+                            'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
                         ]);
 
                         Notification::make()
@@ -170,8 +155,7 @@ class GayApplicationResource extends Resource
                             ->send();
                     })
                     ->visible(fn (GayApplication $record): bool => $record->status_id == 1),
-                ViewAction::make()->label('Квитанцияни кориу')->url(fn ($record) => route('gay-application.view', ['record' => $record->id]))
-            ])
+                ],position: ActionsPosition::BeforeColumns)
             ->filters([
                 //
             ])
@@ -216,7 +200,7 @@ class GayApplicationResource extends Resource
                             
                                         $telegram->sendMessage([
                                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                                            'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
+                                            'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
                                         ]);
                                     }
                         
