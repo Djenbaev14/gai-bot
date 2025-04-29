@@ -46,7 +46,8 @@ class TelegramWebhookController extends Controller
                 ->setResizeKeyboard(true)
                 ->setOneTimeKeyboard(false)
                 ->row([
-                    Keyboard::button(['text' => '📋 Наўбетке жазылыў']),
+                    Keyboard::button(['text' => '✍️ Наўбетке жазылыў']),
+                    Keyboard::button(['text' => '📋 Наўбетти тексериў']),
                 ]);
                 // ->row([
                 //     Keyboard::button(['text' => '📋 Нәўбетти көриў']),
@@ -61,27 +62,37 @@ class TelegramWebhookController extends Controller
         }
 
         // 2. Navbatni korish
-        // if ($text === '📋 Нәўбетти көриў') {
-        //     $last_queue = GayApplication::whereHas('status', function (Builder $query) {
-        //         $query->where('key', '=', 'completed');
-        //     })->latest()->first();
+        if ($text === '📋 Наўбетти тексериў') {
 
-        //     $queueText = $last_queue
-        //         ? 'Акыргы болуп №' . $last_queue->queueNumber->queue_number . ' кирди'
-        //         : 'Еле ешким кирген жок';
+            // Foydalanuvchiga navbat raqami yuborish
+            $customer = Customer::where('telegram_user_id','=',$chatId)->first();
+            $myQueueNumber=GayApplication::where('customer_id',$customer->id)->latest()->first()->queueNumber->queue_number;
+            $lastQueue = GayApplication::whereHas('status', function (Builder $query) {
+                $query->where('key', '=', 'completed');
+            })->latest()->first();
+            $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
 
-        //     return $telegram->sendMessage([
-        //         'chat_id' => $chatId,
-        //         'text' => $queueText,
-        //     ]);
-        // }
+            $waitingCount = GayApplication::whereHas('status', function (Builder $query) {
+                $query->where('key', '=','active');
+            })->whereHas('queueNumber', function (Builder $query) use ($lastQueueNumber, $myQueueNumber) {
+                $query->where('queue_number', '>', $lastQueueNumber)
+                      ->where('queue_number', '<', $myQueueNumber);
+            })->count();
+            $waiting=$waitingCount>0 ? "Сиздиң алдыңызда $waitingCount пуҳара бар": "Сиздиң алдыңызда ешким жок";
+            $lastQueueText=$lastQueueNumber>0 ? "Ақырғы кирген наўбет:№$lastQueueNumber": "Еле ешким тестке кирген жок";
 
-        if ($text === '📋 Наўбетке жазылыў') {
+            $telegram->sendMessage([
+                'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
+                'text' => "✅ Сизиң дизимнен өтиў сораўыңыз тастыйықланды!\n\nНәўбет номериңиз: №$myQueueNumber\n📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди",
+            ]);
+        }
+
+        if ($text === '✍️ Наўбетке жазылыў') {
             Cache::put("user:{$chatId}:step", "awaiting_name", 600);
 
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
-                'text' => 'Илтимас, толық атыңызды киргизиң:',
+                'text' => 'Фамилия атыңызды толық киритин ( Нокисбаев Оралбай):',
             ]);
         }
 
@@ -92,11 +103,17 @@ class TelegramWebhookController extends Controller
 
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
-                'text' => 'Паспорт серия ҳәм номериңизди киргизиң AB5557766:',
+                'text' => 'Паспорт серия ҳәм номериңизди киргизиң AA1234567:',
             ]);
         }
 
         if ($step === 'awaiting_passport') {
+            if (!preg_match('/^[A-Z]{2}\d{7}$/', $text)) {
+                return $telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => '❌ Паспорт форматы қате. Дурус форматта киргизиң: AA1234567.',
+                ]);
+            }
             Cache::put("user:{$chatId}:passport", $text, 600);
             Cache::put("user:{$chatId}:step", "awaiting_photo", 600);
 
@@ -106,8 +123,21 @@ class TelegramWebhookController extends Controller
             ]);
         }
 
-        if ($step === 'awaiting_photo' && $message->getPhoto()) {
+        if ($step === 'awaiting_photo') {
+            if(!$message->getPhoto()){
+                return $telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => '❌ Суурет жиберин',
+                ]);
+            }
 
+            $keyboard = Keyboard::make()
+            ->setResizeKeyboard(true)
+            ->setOneTimeKeyboard(false)
+            ->row([
+                Keyboard::button(['text' => '✍️ Наўбетке жазылыў']),
+                Keyboard::button(['text' => '📋 Наўбетти тексериў']),
+            ]);
             $customer = Customer::where('telegram_user_id', $chatId)->first();
             if (!$customer) {
                 $customer = Customer::create([
@@ -140,6 +170,7 @@ class TelegramWebhookController extends Controller
                 return $telegram->sendMessage([
                     'chat_id' => $chatId,
                     'text' => $messageText,
+                    'reply_markup'=>$keyboard
                 ]);
             } else {
                 $gay_application=GayApplication::where('customer_id', $customer->id)
@@ -175,9 +206,11 @@ class TelegramWebhookController extends Controller
                     Cache::forget("user:{$chatId}:name");
                     Cache::forget("user:{$chatId}:passport");
         
+        
                     return $telegram->sendMessage([
                         'chat_id' => $chatId,
                         'text' => $messageText,
+                        'reply_markup'=>$keyboard
                     ]);
                 }
             }
@@ -204,12 +237,18 @@ class TelegramWebhookController extends Controller
             Cache::forget("user:{$chatId}:fileName");
             Cache::forget("user:{$chatId}:number");
             Cache::forget("user:{$chatId}:id");
-            $removeKeyboard = Keyboard::remove();
+            $keyboard = Keyboard::make()
+                ->setResizeKeyboard(true)
+                ->setOneTimeKeyboard(false)
+                ->row([
+                    Keyboard::button(['text' => '✍️ Наўбетке жазылыў']),
+                    Keyboard::button(['text' => '📋 Наўбетти тексериў']),
+                ]);
 
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => $messageText,
-                'reply_markup'=>$removeKeyboard
+                'reply_markup'=>$keyboard
             ]);
         }
         if($step === 'new_queue' && $text==='Яқ наўбетимде қаламан'){
@@ -222,12 +261,18 @@ class TelegramWebhookController extends Controller
             Cache::forget("user:{$chatId}:fileName");
             Cache::forget("user:{$chatId}:number");
             Cache::forget("user:{$chatId}:id");
-            $removeKeyboard = Keyboard::remove();
+            $keyboard = Keyboard::make()
+                ->setResizeKeyboard(true)
+                ->setOneTimeKeyboard(false)
+                ->row([
+                    Keyboard::button(['text' => '✍️ Наўбетке жазылыў']),
+                    Keyboard::button(['text' => '📋 Наўбетти тексериў']),
+                ]);
 
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => "Сиздин №$number наубетиниз оз орнында калды",
-                'reply_markup'=>$removeKeyboard
+                'reply_markup'=>$keyboard
             ]);
             
         }

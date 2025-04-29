@@ -7,6 +7,7 @@ use App\Filament\Resources\GayApplicationResource\RelationManagers;
 use App\Models\Customer;
 use App\Models\GayApplication;
 use App\Models\QueueNumber;
+use App\Models\Status;
 use Filament\Forms;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\FileUpload;
@@ -16,6 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -66,6 +68,8 @@ class GayApplicationResource extends Resource
     {
         return $table
             ->columns([
+                // Tables\Columns\SelectColumn::make('queueNumber.queue_number')
+                // ->label('⛭'),
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
                     ->searchable(),
