@@ -42,7 +42,7 @@ class CompletedGayAppResource extends Resource
         return $table
             ->query(
                 GayApplication::query()
-                    ->where('status_id',3) 
+                    ->where('status_id',4) 
             )
             ->columns([
                 // Tables\Columns\SelectColumn::make('queueNumber.queue_number')
