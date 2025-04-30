@@ -49,6 +49,7 @@ class ActiveGayAppResource extends Resource
                     ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
+                    ->sortable('asc')
                     ->searchable(),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
