@@ -41,7 +41,10 @@ class ActiveGayAppResource extends Resource
         return $table
             ->query(
                 GayApplication::query()
-                    ->where('status_id',2) 
+                    ->where('status_id', 2)
+                    ->join('queue_numbers', 'queue_numbers.gay_application_id', '=', 'gay_applications.id')
+                    ->orderBy('queue_numbers.queue_number', 'desc')
+                    ->select('gay_applications.*') // faqat gay_applications ustunlarini tanlab oling
             )
             ->columns([
                 Tables\Columns\ImageColumn::make('document_path')
@@ -49,7 +52,6 @@ class ActiveGayAppResource extends Resource
                     ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
-                    ->sortable('asc')
                     ->searchable(),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
@@ -61,7 +63,6 @@ class ActiveGayAppResource extends Resource
                     ->label('Телефон')
                     ->searchable(),
             ])
-            ->defaultSort('created_at','asc')
             ->defaultPaginationPageOption(25)
             ->actions([
                 Action::make('active')
