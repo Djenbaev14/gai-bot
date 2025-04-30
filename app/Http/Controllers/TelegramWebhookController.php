@@ -20,7 +20,7 @@ class TelegramWebhookController extends Controller
     {
         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
         $update = $telegram->getWebhookUpdate();
-        
+
         $text = $update->getMessage()?->getText();
         $message = $update->getMessage();
         $chatId = $message?->getChat()?->id;
@@ -34,10 +34,10 @@ class TelegramWebhookController extends Controller
         // 1. Telefon yuborgan bo'lsa
         if ($message->has('contact')) {
             $phone = $message->contact->phone_number;
-            $newCustomer=Customer::updateOrCreate([
-                'telegram_user_id'=>$chatId,
-                'phone_number'=>$phone
-            ]);
+            Customer::updateOrCreate(
+                ['telegram_user_id' => $chatId],
+                ['phone_number' => $phone]
+            );
             Cache::put("user:{$chatId}:phone", $phone, 600);
             Cache::forget("user:{$chatId}:name");
             Cache::forget("user:{$chatId}:passport");
