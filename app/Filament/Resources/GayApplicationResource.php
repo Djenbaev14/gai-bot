@@ -11,6 +11,7 @@ use App\Models\Status;
 use Filament\Forms;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -143,14 +144,21 @@ class GayApplicationResource extends Resource
                     ->color('danger')
                     ->button()
                     ->icon('fas-circle-xmark')
-                    ->action(function (GayApplication $record) {
+                    ->form([
+                        Textarea::make('comment')
+                        ->label('Бийкар кылыу себеби')
+                        ->default('📷 Айдаўшылық гүўалығын алыў ушын төленген квитанция, экзамен билети ямаса басқа тастыйықлаўшы хужжеттин жибериуиниз керек')
+                        ->required()
+                        ->maxLength(500),
+                    ])
+                    ->action(function (array $data,GayApplication $record) {
                         $record->update(['status_id' => 4]); // 4 - active
                             
                         $customer = Customer::find($record->customer_id);
                         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
                         $telegram->sendMessage([
                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                            'text' => "❌ Сизиң дизимнен өтиў сораўыңыз бийкар етилди!\n\n📷 Айдаўшылық гүўалығын алыў ушын төленген квитанция, экзамен билети ямаса басқа тастыйықлаўшы хужжетти  жибериң",
+                            'text' => "❌ Сизиң дизимнен өтиў сораўыңыз бийкар етилди!\n\n".$data['comment'],
                         ]);
                             Notification::make()
                             ->title('Сизиң дизимнен өтиў сораўыңыз бийкар етилди')
