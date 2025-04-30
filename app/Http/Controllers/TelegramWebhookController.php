@@ -20,7 +20,7 @@ class TelegramWebhookController extends Controller
     {
         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
         $update = $telegram->getWebhookUpdate();
-
+        
         $text = $update->getMessage()?->getText();
         $message = $update->getMessage();
         $chatId = $message?->getChat()?->id;
