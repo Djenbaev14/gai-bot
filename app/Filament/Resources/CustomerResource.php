@@ -42,6 +42,9 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('Ид')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('full_name')
                     ->label('ФИО')
                     ->searchable(),

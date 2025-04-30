@@ -25,7 +25,6 @@ class TelegramWebhookController extends Controller
         $message = $update->getMessage();
         $chatId = $message?->getChat()?->id;
         if (!$chatId) return;
-
         $phone = Cache::get("user:{$chatId}:phone");
         $name = Cache::get("user:{$chatId}:name");
         $passport = Cache::get("user:{$chatId}:passport");
@@ -86,10 +85,10 @@ class TelegramWebhookController extends Controller
                     'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
                 ]);
             }else{
-                $text='⭕️ Сизде актив наубет жок';
+                $active='⭕️ Сизде актив наубет жок';
                 $telegram->sendMessage([
                     'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
-                    'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n$text\n\n$lastQueueText\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
+                    'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n$active\n\n$lastQueueText\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
                 ]);
             }
         }
