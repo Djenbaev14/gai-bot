@@ -105,7 +105,7 @@ class TelegramWebhookController extends Controller
 
         // 4. Step bo'yicha harakat qilish
         if ($step === 'awaiting_name') {
-            if (!preg_match('/^([А-Яа-яЁё]{2,}\s){1,}[А-Яа-яЁё]{2,}$/u', $text)) {
+            if (!preg_match('/^([\p{L}]{2,}\s){1,}[\p{L}]{2,}$/u', $text)) {
                 return $telegram->sendMessage([
                     'chat_id' => $chatId,
                     'text' => '❌ Фамилия атыңызды толық киритин ( Нокисбаев Оралбай)',
