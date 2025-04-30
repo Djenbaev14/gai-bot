@@ -99,13 +99,19 @@ class TelegramWebhookController extends Controller
             $keyboard=Keyboard::remove();
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
-                'text' => 'Фамилия атыңызды толық киритин ( Нокисбаев Оралбай):',
+                'text' => 'Фамилия атыңызды толық киритин ( Нокисбаев Оралбай)',
                 'reply_markup' => $keyboard,
             ]);
         }
 
         // 4. Step bo'yicha harakat qilish
         if ($step === 'awaiting_name') {
+            if (!preg_match('/^([А-Яа-яЁё]{2,}\s){1,}[А-Яа-яЁё]{2,}$/u', $text)) {
+                return $telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => '❌ Фамилия атыңызды толық киритин ( Нокисбаев Оралбай)',
+                ]);
+            }
             Cache::put("user:{$chatId}:name", $text, 600);
             Cache::put("user:{$chatId}:step", "awaiting_passport", 600);
 
