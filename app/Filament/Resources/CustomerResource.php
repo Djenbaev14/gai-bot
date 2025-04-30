@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -42,9 +43,11 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('Ид')
-                    ->searchable(),
+                TextColumn::make('row_number')
+                    ->label('№')
+                    ->state(function ($record, $loop) {
+                        return $loop->iteration;
+                    }),
                 Tables\Columns\TextColumn::make('full_name')
                     ->label('ФИО')
                     ->searchable(),
