@@ -52,10 +52,6 @@ class TelegramWebhookController extends Controller
                     Keyboard::button(['text' => '✍️ Наўбетке жазылыў']),
                     Keyboard::button(['text' => '📋 Наўбетти тексериў']),
                 ]);
-                // ->row([
-                //     Keyboard::button(['text' => '📋 Нәўбетти көриў']),
-                //     Keyboard::button(['text' => '👨‍💼 Админ менен байланысыў']),
-                // ]);
 
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
@@ -69,7 +65,6 @@ class TelegramWebhookController extends Controller
 
             $customer = Customer::where('telegram_user_id','=',$chatId)->first();
             $myQueue=GayApplication::where('customer_id',$customer->id)->where('status_id',2)->latest()->first();
-            Log::info($myQueue);
             $lastQueue = GayApplication::whereHas('status', function (Builder $query) {
                 $query->where('key', '=', 'completed');
             })->latest()->first();
@@ -101,8 +96,7 @@ class TelegramWebhookController extends Controller
 
         if ($text === '✍️ Наўбетке жазылыў') {
             Cache::put("user:{$chatId}:step", "awaiting_name", 600);
-
-            $keyboard = Keyboard::remove();
+            $keyboard=Keyboard::remove();
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => 'Фамилия атыңызды толық киритин ( Нокисбаев Оралбай):',
@@ -299,15 +293,7 @@ class TelegramWebhookController extends Controller
     }
 
 
-    // ✅ Tezkor xabar yuborish
-    private function reply($telegram, $chatId, $text)
-    {
-        return $telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => $text
-        ]);
-    }
-
+    
     // 🖼️ Rasmni saqlash
     private function saveTelegramPhoto($photos)
     {
