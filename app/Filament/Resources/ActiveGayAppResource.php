@@ -43,7 +43,7 @@ class ActiveGayAppResource extends Resource
                 GayApplication::query()
                     ->where('status_id', 2)
                     ->join('queue_numbers', 'queue_numbers.gay_application_id', '=', 'gay_applications.id')
-                    ->orderBy('queue_numbers.queue_number', 'desc')
+                    ->orderBy('queue_numbers.queue_number', 'asc')
                     ->select('gay_applications.*') // faqat gay_applications ustunlarini tanlab oling
             )
             ->columns([
