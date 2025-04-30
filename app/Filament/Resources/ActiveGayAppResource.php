@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
@@ -47,7 +48,7 @@ class ActiveGayAppResource extends Resource
                     ->select('gay_applications.*') // faqat gay_applications ustunlarini tanlab oling
             )
             ->columns([
-                Tables\Columns\ImageColumn::make('document_path')
+                ImageColumn::make('document_path')
                     ->label('Квитанция')
                     ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
                 TextColumn::make('queueNumber.queue_number')

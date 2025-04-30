@@ -2,31 +2,27 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CompletedGayAppResource\Pages;
-use App\Filament\Resources\CompletedGayAppResource\RelationManagers;
-use App\Models\CompletedGayApp;
-use App\Models\Customer;
+use App\Filament\Resources\CancelledAppResource\Pages;
+use App\Filament\Resources\CancelledAppResource\RelationManagers;
+use App\Models\CancelledApp;
 use App\Models\GayApplication;
-use App\Models\QueueNumber;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\BulkAction;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Collection;
-use Telegram\Bot\Api;
 
-class CancelledGayAppResource extends Resource
+class CancelledAppResource extends Resource
 {
     protected static ?string $model = GayApplication::class;
-    protected static ?string $navigationGroup = 'Очередь';
+
     protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Очередь';
 
     public static function form(Form $form): Form
     {
@@ -44,8 +40,9 @@ class CancelledGayAppResource extends Resource
                     ->where('status_id',4) 
             )
             ->columns([
-                // Tables\Columns\SelectColumn::make('queueNumber.queue_number')
-                // ->label('⛭'),
+                ImageColumn::make('document_path')
+                    ->label('Квитанция')
+                    ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
                     ->searchable(),
@@ -61,16 +58,10 @@ class CancelledGayAppResource extends Resource
             ])
             ->defaultSort('created_at','asc')
             ->defaultPaginationPageOption(25)
-            ->actions([
-                ViewAction::make()->label('Квитанцияни кориу')->url(fn ($record) => route('gay-application.view', ['record' => $record->id]))
-            ])
+            
             ->filters([
                 //
             ]);
-    }
-    public static function shouldRegisterNavigation(): bool
-    {
-        return false;
     }
     public static function getNavigationBadge(): ?string
     {
@@ -102,9 +93,9 @@ class CancelledGayAppResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCompletedGayApps::route('/'),
-            'create' => Pages\CreateCompletedGayApp::route('/create'),
-            'edit' => Pages\EditCompletedGayApp::route('/{record}/edit'),
+            'index' => Pages\ListCancelledApps::route('/'),
+            'create' => Pages\CreateCancelledApp::route('/create'),
+            'edit' => Pages\EditCancelledApp::route('/{record}/edit'),
         ];
     }
 }

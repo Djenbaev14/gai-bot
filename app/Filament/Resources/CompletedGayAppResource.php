@@ -60,9 +60,6 @@ class CompletedGayAppResource extends Resource
             ])
             ->defaultSort('created_at','asc')
             ->defaultPaginationPageOption(25)
-            ->actions([
-                ViewAction::make()->label('Квитанцияни кориу')->url(fn ($record) => route('gay-application.view', ['record' => $record->id]))
-            ])
             ->filters([
                 //
             ]);
