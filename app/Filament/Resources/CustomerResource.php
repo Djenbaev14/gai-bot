@@ -42,6 +42,10 @@ class CustomerResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(
+                Customer::query()
+                    ->where('branch_id',auth()->user()->branch_id)
+            )
             ->columns([
                 TextColumn::make('row_number')
                     ->label('№')
@@ -55,6 +59,9 @@ class CustomerResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('passport')
                     ->label('Паспорт')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('region.name')
+                    ->label('Регион')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone_number')
                     ->label('Телефон номер')

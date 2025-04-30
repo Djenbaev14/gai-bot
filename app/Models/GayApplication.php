@@ -18,11 +18,21 @@ class GayApplication extends Model
     public function status(){
         return $this->belongsTo(Status::class);
     }
+    public function region(){
+        return $this->belongsTo(Region::class);
+    }
+    public function branch(){
+        return $this->belongsTo(Branch::class);
+    }
     public function queueNumber(){
         return $this->hasOne(QueueNumber::class);
     }
     public function getQueueNumberValueAttribute()
     {
         return $this->queueNumber?->queue_number;
+    }
+    public function getBranchNameAttribute()
+    {
+        return $this->branch?->name;
     }
 }

@@ -71,24 +71,22 @@ class GayApplicationResource extends Resource
         return $table
             ->query(
                 GayApplication::query()
+                    ->where('branch_id',auth()->user()->branch_id)
                     ->where('status_id',1) 
             )
             ->columns([
                 Tables\Columns\ImageColumn::make('document_path')
                 ->label('Квитанция')
                 ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
+                TextColumn::make('branch.name')
+                    ->label('Филиаль')
+                    ->searchable(),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->label('Дата')
                     ->dateTime('d.m.Y H:i'), // Misol: 29.04.2025 15:42
-                TextColumn::make('customer.passport')
-                    ->label('Паспорт')
-                    ->searchable(),
-                TextColumn::make('customer.phone_number')
-                    ->label('Телефон')
-                    ->searchable(),
             ])
             ->defaultSort('created_at','asc')
             ->defaultPaginationPageOption(25)
@@ -101,42 +99,52 @@ class GayApplicationResource extends Resource
                     ->action(function (GayApplication $record) {
                         
                         $record->update(['status_id' => 2]); // 2 - active
-                        $lastQueueNumber = QueueNumber::max('queue_number'); // Oxirgi navbat raqamini olamiz
-                        $myQueueNumber = $lastQueueNumber + 1; // Keyingi raqamni olish
+                        
+                        $lastQueueNumber = QueueNumber::where('branch_id', $record->branch_id)->max('queue_number');
+                    
+                        $myQueueNumber = $lastQueueNumber + 1;
                 
                         // Yangi navbat raqamini yaratish
                         QueueNumber::create([
+                            'user_id' => auth()->user()->id,
                             'customer_id' => $record->customer_id,
                             'gay_application_id' => $record->id,
+                            'branch_id' => $record->branch_id,
                             'queue_number' => $myQueueNumber,
                         ]);
                         // Foydalanuvchiga navbat raqami yuborish
                         $customer = Customer::find($record->customer_id);
                         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-                        $lastQueue = GayApplication::whereHas('status', function (Builder $query) {
-                            $query->where('key', '=', 'completed');
-                        })->latest()->first();
+
+                        $lastQueue = GayApplication::where('branch_id', $record->branch_id)
+                            ->whereHas('status', function (Builder $query) {
+                                $query->where('key', '=', 'completed');
+                            })->latest()->first();
                         $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
 
-                        $waitingCount = GayApplication::whereHas('status', function (Builder $query) {
-                            $query->where('key', '=','active');
-                        })->whereHas('queueNumber', function (Builder $query) use ($lastQueueNumber, $myQueueNumber) {
-                            $query->where('queue_number', '>', $lastQueueNumber)
-                                  ->where('queue_number', '<', $myQueueNumber);
-                        })->count();
+                        $waitingCount = GayApplication::where('branch_id', $record->branch_id)
+                            ->whereHas('status', function (Builder $query) {
+                                $query->where('key', '=','active');
+                            })->whereHas('queueNumber', function (Builder $query) use ($lastQueueNumber, $myQueueNumber) {
+                                $query->where('queue_number', '>', $lastQueueNumber)
+                                    ->where('queue_number', '<', $myQueueNumber);
+                            })->count();
 
                         $waiting=$waitingCount>0 ? "❇️ Сиздиң алдыңызда $waitingCount пуҳара бар": "Сиздиң алдыңызда ешким жок";
                         $lastQueueText=$lastQueueNumber>0 ? "✅ Ақырғы кирген наўбет:  № $lastQueueNumber": "Еле ешким тестке кирген жок";
             
                         $telegram->sendMessage([
                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                            'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
+                            'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nТест тапсырыу орныныз: $record->branch_name\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
                         ]);
 
                         Notification::make()
                             ->title('Дизимнен өтиў сораўыңыз тастыйықланды')
                             ->success()
                             ->send();
+                    })
+                    ->after(function ($record, $livewire) {
+                        $livewire->dispatch('refresh');
                     })
                     ->visible(fn (GayApplication $record): bool => $record->status_id == 1),
                 Action::make('cancelled')
@@ -187,6 +195,7 @@ class GayApplicationResource extends Resource
                                 
                                         // Yangi navbat raqamini yaratish
                                         QueueNumber::create([
+                                            'user_id' => auth()->user()->id,
                                             'customer_id' => $record->customer_id,
                                             'gay_application_id' => $record->id,
                                             'queue_number' => $myQueueNumber,
@@ -262,7 +271,7 @@ class GayApplicationResource extends Resource
     }
     public static function getNavigationBadge(): ?string
     {
-        return (string) GayApplication::where('status_id', 1)->count();
+        return (string) GayApplication::where('branch_id',auth()->user()->branch_id)->where('status_id', 1)->count();
     }
     public static function getNavigationBadgeColor(): ?string
     {

@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Branch;
+use App\Models\BranchRegion;
 use App\Models\Customer;
 use App\Models\GayApplication;
+use App\Models\Region;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -25,8 +28,11 @@ class TelegramWebhookController extends Controller
         $message = $update->getMessage();
         $chatId = $message?->getChat()?->id;
         if (!$chatId) return;
+
         $phone = Cache::get("user:{$chatId}:phone");
         $name = Cache::get("user:{$chatId}:name");
+        $region = Cache::get("user:{$chatId}:region");
+        $branch = Cache::get("user:{$chatId}:branch");
         $passport = Cache::get("user:{$chatId}:passport");
         $step = Cache::get("user:{$chatId}:step");
 
@@ -64,15 +70,20 @@ class TelegramWebhookController extends Controller
 
             $customer = Customer::where('telegram_user_id','=',$chatId)->first();
             $myQueue=GayApplication::where('customer_id',$customer->id)->where('status_id',2)->latest()->first();
-            $lastQueue = GayApplication::whereHas('status', function (Builder $query) {
-                $query->where('key', '=', 'completed');
-            })->latest()->first();
-            $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
-
-            $lastQueueText=$lastQueueNumber>0 ? "✅ Ақырғы кирген наўбет:  № $lastQueueNumber": "Еле ешким тестке кирген жок";
+            
             if($myQueue){
+                $lastQueue = GayApplication::where('branch_id',$myQueue->branch_id)->whereHas('status', function (Builder $query) {
+                    $query->where('key', '=', 'completed');
+                })->latest()->first();
+
+                $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
+    
+                $lastQueueText=$lastQueueNumber > 0 ? "✅ Ақырғы кирген наўбет:  № $lastQueueNumber": "Еле ешким тестке кирген жок";
+            
                 $myQueueNumber=$myQueue->queueNumber->queue_number;
-                $waitingCount = GayApplication::whereHas('status', function (Builder $query) {
+
+                $waitingCount = GayApplication::where('branch_id', $myQueue->branch_id)
+                ->whereHas('status', function (Builder $query) {
                     $query->where('key', '=','active');
                 })->whereHas('queueNumber', function (Builder $query) use ($lastQueueNumber, $myQueueNumber) {
                     $query->where('queue_number', '>', $lastQueueNumber)
@@ -82,28 +93,61 @@ class TelegramWebhookController extends Controller
                 
                 $telegram->sendMessage([
                     'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
-                    'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
+                    'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n❗️Тест тапсырыу орныныз: $myQueue->branch_name\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
                 ]);
             }else{
                 $active='⭕️ Сизде актив наубет жок';
                 $telegram->sendMessage([
                     'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
-                    'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n$active\n\n$lastQueueText\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
+                    'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n$active\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,2,3 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
                 ]);
             }
         }
 
         if ($text === '✍️ Наўбетке жазылыў') {
+            Cache::put("user:{$chatId}:step", "region", 600);
+            
+            $regions = Region::pluck('name')->toArray();
+
+            $buttons = collect($regions)->chunk(2)->map(function ($chunk) {
+                return $chunk->values()->all();
+            })->values()->all();
+
+            $keyboard = Keyboard::make()
+                ->setKeyboard($buttons)
+                ->setResizeKeyboard(true)
+                ->setOneTimeKeyboard(true);
+        
+            return $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => "Прописка туўылған районыңызды сайлаң 🔰\n\n ⭕️ Итибар бериң сиз сайлаған район бойынша имтиханды өзиңизге жақын орында тапсырасыз. Паспорт пропискасы бойынша районды дурыс сайлаң ❗️",
+                'reply_markup' => $keyboard
+            ]);
+        }
+
+        if ($step === 'region') {
+            $reg = Region::where('name', $text)->first();
+
+            if (!$reg) {
+                return $telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => '❌ Бул регио табылмады. Илтимас, тизимнен берилген регионлардан бирин сайлан.',
+                ]);
+            }
+            $branch = $reg->branch->first();
+            Cache::put("user:{$chatId}:region", $reg->id, 600);
+            Cache::put("user:{$chatId}:branch", $branch->id, 600);
             Cache::put("user:{$chatId}:step", "awaiting_name", 600);
+
+
             $keyboard=Keyboard::remove();
+
             return $telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => 'Фамилия атыңызды толық киритин ( Нокисбаев Оралбай)',
                 'reply_markup' => $keyboard,
             ]);
         }
-
-        // 4. Step bo'yicha harakat qilish
         if ($step === 'awaiting_name') {
             if (!preg_match('/^([\p{L}]{2,}\s){1,}[\p{L}]{2,}$/u', $text)) {
                 return $telegram->sendMessage([
@@ -144,8 +188,10 @@ class TelegramWebhookController extends Controller
                 ]);
             }
             $customer = Customer::where('telegram_user_id', $chatId)->first();
-            if ($customer->full_name === null) {
+            if ($customer && $customer->full_name === null) {
                 $customer->update([
+                    'region_id' => $region,
+                    'branch_id' => $branch,
                     'full_name' => $name,
                     'passport' => strtoupper($passport),
                 ]);
@@ -158,6 +204,8 @@ class TelegramWebhookController extends Controller
             if (!$exists) {
                 $fileName = $this->saveTelegramPhoto($message->getPhoto());
                 GayApplication::create([
+                    'region_id' => $region,
+                    'branch_id' => $branch,
                     'customer_id' => $customer->id,
                     'document_path' => $fileName,
                     'status_id' => 1,
@@ -239,6 +287,8 @@ class TelegramWebhookController extends Controller
                 'status_id'=>4
             ]);
             GayApplication::create([
+                'region_id' => $region,
+                'branch_id' => $branch,
                 'customer_id' => $customer->id,
                 'document_path' => Cache::get("user:{$chatId}:fileName"),
                 'status_id' => 1,

@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('telegram_user_id')->unique();
             $table->string('phone_number')->unique();
+            $table->unsignedBigInteger('region_id')->nullable()->default(6);
+            $table->foreign('region_id')->references('id')->on('regions');
+            $table->unsignedBigInteger('branch_id')->nullable()->default(1);
+            $table->foreign('branch_id')->references('id')->on('branches');
             $table->string('full_name')->nullable();
             $table->string('passport')->nullable();
             $table->timestamps();

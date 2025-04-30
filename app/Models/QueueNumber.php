@@ -12,7 +12,7 @@ class QueueNumber extends Model
     protected $guarded=['id'];
     public function application()
     {
-        return $this->belongsTo(GayApplication::class);
+        return $this->belongsTo(GayApplication::class,'gay_application_id');
     }
 
     public function customer()

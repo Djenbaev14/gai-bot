@@ -37,6 +37,7 @@ class CancelledAppResource extends Resource
         return $table
             ->query(
                 GayApplication::query()
+                    ->where('branch_id',auth()->user()->branch_id)
                     ->where('status_id',4) 
             )
             ->columns([
@@ -65,7 +66,7 @@ class CancelledAppResource extends Resource
     }
     public static function getNavigationBadge(): ?string
     {
-        return (string) GayApplication::where('status_id', 4)->count();
+        return (string) GayApplication::where('branch_id',auth()->user()->branch_id)->where('status_id', 4)->count();
     }
     public static function getNavigationBadgeColor(): ?string
     {

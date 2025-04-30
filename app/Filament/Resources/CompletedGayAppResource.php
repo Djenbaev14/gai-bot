@@ -42,6 +42,7 @@ class CompletedGayAppResource extends Resource
         return $table
             ->query(
                 GayApplication::query()
+                    ->where('branch_id',auth()->user()->branch_id)
                     ->where('status_id',3) 
             )
             ->columns([
@@ -66,7 +67,7 @@ class CompletedGayAppResource extends Resource
     }
     public static function getNavigationBadge(): ?string
     {
-        return (string) GayApplication::where('status_id', 3)->count();
+        return (string) GayApplication::where('branch_id',auth()->user()->branch_id)->where('status_id', 3)->count();
     }
     public static function getNavigationBadgeColor(): ?string
     {

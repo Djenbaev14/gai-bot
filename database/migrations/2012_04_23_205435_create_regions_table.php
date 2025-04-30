@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('regions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('login');
-            $table->unsignedBigInteger('branch_id');
-            $table->foreign('branch_id')->references('id')->on('branches');
-            $table->string('password');
             $table->timestamps();
         });
     }
@@ -27,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('regions');
     }
 };

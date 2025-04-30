@@ -13,11 +13,18 @@ return new class extends Migration
     {
         Schema::create('queue_numbers', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->default(1);
+            $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedBigInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->unsignedBigInteger('gay_application_id');
             $table->foreign('gay_application_id')->references('id')->on('gay_applications')->onDelete('cascade');
-            $table->integer('queue_number')->unique();
+            $table->unsignedBigInteger('branch_id')->default(1); // qo‘shildi
+            $table->foreign('branch_id')->references('id')->on('branches'); // tashqi kalit
+
+            $table->integer('queue_number');
+
+            $table->unique(['branch_id', 'queue_number']); // branch uchun unique
             $table->softDeletes();
             $table->timestamps();
         });

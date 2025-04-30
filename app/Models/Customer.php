@@ -14,4 +14,11 @@ class Customer extends Model
     public function gayApplications(){
         return $this->hasMany(GayApplication::class);
     }
+    public function region(){
+        return $this->belongsTo(Region::class);
+    }
+    public function branch(){
+        return $this->belongsTo(Branch::class);
+    }
+    
 }

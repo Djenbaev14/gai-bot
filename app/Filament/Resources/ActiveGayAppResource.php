@@ -42,10 +42,11 @@ class ActiveGayAppResource extends Resource
         return $table
             ->query(
                 GayApplication::query()
+                    ->where('gay_applications.branch_id',auth()->user()->branch_id)
                     ->where('status_id', 2)
                     ->join('queue_numbers', 'queue_numbers.gay_application_id', '=', 'gay_applications.id')
                     ->orderBy('queue_numbers.queue_number', 'asc')
-                    ->select('gay_applications.*') // faqat gay_applications ustunlarini tanlab oling
+                    ->select('gay_applications.*')
             )
             ->columns([
                 ImageColumn::make('document_path')
@@ -54,15 +55,15 @@ class ActiveGayAppResource extends Resource
                 TextColumn::make('queueNumber.queue_number')
                     ->label('Номер')
                     ->searchable(),
+                TextColumn::make('branch.name')
+                    ->label('Филиаль')
+                    ->searchable(),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
-                TextColumn::make('customer.passport')
-                    ->label('Паспорт')
-                    ->searchable(),
-                TextColumn::make('customer.phone_number')
-                    ->label('Телефон')
-                    ->searchable(),
+                TextColumn::make('created_at')
+                    ->label('Дата')
+                    ->dateTime('d.m.Y H:i'), // Misol: 29.04.2025 15:42
             ])
             ->defaultPaginationPageOption(25)
             ->actions([
@@ -86,6 +87,7 @@ class ActiveGayAppResource extends Resource
                         $previousQueues = QueueNumber::where('queue_number', '<=', $queueNumber->queue_number)
                             ->join('gay_applications', 'queue_numbers.gay_application_id', '=', 'gay_applications.id')
                             ->where('gay_applications.status_id', 2) // faqat active
+                            ->where('gay_applications.branch_id', $record->branch_id) // faqat bir xil branch
                             ->pluck('queue_numbers.gay_application_id');
 
                         // Ular orqali tegishli arizalarni 'completed' statusiga o'zgartiramiz
@@ -183,7 +185,7 @@ class ActiveGayAppResource extends Resource
     }
     public static function getNavigationBadge(): ?string
     {
-        return (string) GayApplication::where('status_id', 2)->count();
+        return (string) GayApplication::where('branch_id',auth()->user()->branch_id)->where('status_id', 2)->count();
     }
     public static function getNavigationBadgeColor(): ?string
     {

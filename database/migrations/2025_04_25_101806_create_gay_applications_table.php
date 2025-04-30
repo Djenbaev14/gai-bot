@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::create('gay_applications', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('branch_id')->default(1);
+            $table->foreign('branch_id')->references('id')->on('branches');
+            $table->unsignedBigInteger('region_id')->default(6);
+            $table->foreign('region_id')->references('id')->on('regions');
             $table->unsignedBigInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('customers');
-            $table->string('document_path')->nullable(); // kapitansiya fayli
+            $table->string('document_path')->nullable();
             $table->unsignedBigInteger('status_id')->default(1);
             $table->foreign('status_id')->references('id')->on('statuses');
             $table->softDeletes();

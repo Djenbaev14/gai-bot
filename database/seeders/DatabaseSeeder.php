@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Branch;
+use App\Models\Region;
 use App\Models\Status;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -16,11 +18,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         
-        User::create([
-            'name' => 'Admin User',
-            'login' => 'gai',
-            'password' => Hash::make('g2023@@'),
-        ]);
         Status::create([
             'name'=>'Ожидает подтверждение',
             'key'=>'pending',
@@ -45,6 +42,49 @@ class DatabaseSeeder extends Seeder
             'name'=>'Пропущено',
             'key'=>'not_arrived',
             'color'=>'#ff1414',
+        ]);
+
+        $regions=[
+            "Тахтакопир районы",
+            "Караозек районы",
+            "Шымбай районы",
+            "Кегейли районы",
+            "Бозатау районы",
+            "Нокис районы",
+            "Хожели районы",
+            "Нокис каласы", 
+            "Конырат районы",
+            "Мойнак районы",
+            "Канлыкол районы",
+            "Шоманай районы",
+            "Беруний районы",
+            "Торткол районы",
+            "Елликкала районы",
+            "Амударья районы",
+        ];
+
+        foreach ($regions as $key => $region) {
+            Region::create([
+                'name'=>$region
+            ]);
+        }
+
+        $branches=[
+            'Нокис филиал',
+            'Конырат филиал',
+            'Беруний филиал',
+        ];
+        foreach ($branches as $key => $branch) {
+            Branch::create([
+                'name'=>$branch
+            ]);
+        }
+        
+        User::create([
+            'name' => 'Admin User',
+            'login' => 'gai',
+            'branch_id' => 1,
+            'password' => Hash::make('g2023@@'),
         ]);
     }
 }
