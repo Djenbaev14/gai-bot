@@ -45,11 +45,11 @@ class CustomerResource extends Resource
             ->columns([
                 TextColumn::make('row_number')
                     ->label('№')
-                    ->state(
-                        function ($record, $livewire, $rowLoop) {
-                            return ($livewire->getTableRecordsPerPage() * ($livewire->getTablePage() - 1)) + $rowLoop->iteration;
-                        }
-                    ),
+                    ->state(function ($record, $livewire, $rowLoop) {
+                        $perPage = (int) $livewire->getTableRecordsPerPage();
+                        $currentPage = (int) $livewire->getTablePage();
+                        return $perPage * ($currentPage - 1) + $rowLoop->iteration;
+                    }),
                 Tables\Columns\TextColumn::make('full_name')
                     ->label('ФИО')
                     ->searchable(),
