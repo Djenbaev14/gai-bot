@@ -177,97 +177,97 @@ class GayApplicationResource extends Resource
                 ],position: ActionsPosition::BeforeColumns)
             ->filters([
                 //
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                        BulkAction::make('markActive')
-                            ->label('Активлестириу')
-                            ->icon('fas-check')
-                            ->color('primary')
-                            ->requiresConfirmation()
-                            ->action(function (Collection $records) {
-                                // Tanlangan barcha yozuvlar statusini tekshirish
-                                if ($records->every(fn ($record) => $record->status_id == 1)) {
-                                    foreach ($records as $record) {
-                                        $record->update(['status_id' => 2]); // 2 - active
-                                        $lastQueueNumber = QueueNumber::max('queue_number'); // Oxirgi navbat raqamini olamiz
-                                        $myQueueNumber = $lastQueueNumber + 1; // Keyingi raqamni olish
-                                
-                                        // Yangi navbat raqamini yaratish
-                                        QueueNumber::create([
-                                            'user_id' => auth()->user()->id,
-                                            'customer_id' => $record->customer_id,
-                                            'gay_application_id' => $record->id,
-                                            'queue_number' => $myQueueNumber,
-                                        ]);
-                                        // Foydalanuvchiga navbat raqami yuborish
-                                        $customer = Customer::find($record->customer_id);
-                                        $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-                                        $lastQueue = GayApplication::whereHas('status', function (Builder $query) {
-                                            $query->where('key', '=', 'completed');
-                                        })->latest()->first();
-                                        $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
-
-                                        $waitingCount = GayApplication::whereHas('status', function (Builder $query) {
-                                            $query->where('key', '=','active');
-                                        })->whereHas('queueNumber', function (Builder $query) use ($lastQueueNumber, $myQueueNumber) {
-                                            $query->where('queue_number', '>', $lastQueueNumber)
-                                                  ->where('queue_number', '<', $myQueueNumber);
-                                        })->count();
-
-                                        $waiting=$waitingCount>0 ? "❇️ Сиздиң алдыңызда $waitingCount пуҳара бар": "Сиздиң алдыңызда ешким жок";
-                                        $lastQueueText=$lastQueueNumber>0 ? "✅ Ақырғы кирген наўбет:  № $lastQueueNumber": "Еле ешким тестке кирген жок";
-                            
-                                        $telegram->sendMessage([
-                                            'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                                            'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,3,5 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
-                                        ]);
-                                    }
-                        
-                                    Notification::make()
-                                        ->title('Statuslar muvaffaqiyatli yangilandi!')
-                                        ->success()
-                                        ->send();
-                                } else {
-                                    Notification::make()
-                                        ->title('Faqat Active (1) statusdagi yozuvlarni tanlang!')
-                                        ->danger()
-                                        ->send();
-                                }
-                            }),
-                    BulkAction::make('markCancelled')
-                        ->label('Отменён')
-                        ->icon('fas-xmark')
-                        ->color('danger')
-                        ->requiresConfirmation()
-                        ->action(function (Collection $records) {
-                            if ($records->every(fn ($record) => $record->status_id == 1)) {
-                                foreach ($records as $record) {
-                                    $record->update(['status_id' => 4]); // 4 - active
-                            
-                                    // Foydalanuvchiga navbat raqami yuborish
-                                    $customer = Customer::find($record->customer_id);
-                                    $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-                                    $telegram->sendMessage([
-                                        'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                                        'text' => "❌ Сизиң дизимнен өтиў сораўыңыз бийкар етилди!",
-                                    ]);
-                                }
-                    
-                                Notification::make()
-                                    ->title('Statuslar muvaffaqiyatli yangilandi!')
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Faqat Active (1) statusdagi yozuvlarni tanlang!')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                ]),
-                
             ]);
+            // ->bulkActions([
+            //     Tables\Actions\BulkActionGroup::make([
+            //             BulkAction::make('markActive')
+            //                 ->label('Активлестириу')
+            //                 ->icon('fas-check')
+            //                 ->color('primary')
+            //                 ->requiresConfirmation()
+            //                 ->action(function (Collection $records) {
+            //                     // Tanlangan barcha yozuvlar statusini tekshirish
+            //                     if ($records->every(fn ($record) => $record->status_id == 1)) {
+            //                         foreach ($records as $record) {
+            //                             $record->update(['status_id' => 2]); // 2 - active
+            //                             $lastQueueNumber = QueueNumber::max('queue_number'); // Oxirgi navbat raqamini olamiz
+            //                             $myQueueNumber = $lastQueueNumber + 1; // Keyingi raqamni olish
+                                
+            //                             // Yangi navbat raqamini yaratish
+            //                             QueueNumber::create([
+            //                                 'user_id' => auth()->user()->id,
+            //                                 'customer_id' => $record->customer_id,
+            //                                 'gay_application_id' => $record->id,
+            //                                 'queue_number' => $myQueueNumber,
+            //                             ]);
+            //                             // Foydalanuvchiga navbat raqami yuborish
+            //                             $customer = Customer::find($record->customer_id);
+            //                             $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
+            //                             $lastQueue = GayApplication::whereHas('status', function (Builder $query) {
+            //                                 $query->where('key', '=', 'completed');
+            //                             })->latest()->first();
+            //                             $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
+
+            //                             $waitingCount = GayApplication::whereHas('status', function (Builder $query) {
+            //                                 $query->where('key', '=','active');
+            //                             })->whereHas('queueNumber', function (Builder $query) use ($lastQueueNumber, $myQueueNumber) {
+            //                                 $query->where('queue_number', '>', $lastQueueNumber)
+            //                                       ->where('queue_number', '<', $myQueueNumber);
+            //                             })->count();
+
+            //                             $waiting=$waitingCount>0 ? "❇️ Сиздиң алдыңызда $waitingCount пуҳара бар": "Сиздиң алдыңызда ешким жок";
+            //                             $lastQueueText=$lastQueueNumber>0 ? "✅ Ақырғы кирген наўбет:  № $lastQueueNumber": "Еле ешким тестке кирген жок";
+                            
+            //                             $telegram->sendMessage([
+            //                                 'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
+            //                                 'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,3,5 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
+            //                             ]);
+            //                         }
+                        
+            //                         Notification::make()
+            //                             ->title('Statuslar muvaffaqiyatli yangilandi!')
+            //                             ->success()
+            //                             ->send();
+            //                     } else {
+            //                         Notification::make()
+            //                             ->title('Faqat Active (1) statusdagi yozuvlarni tanlang!')
+            //                             ->danger()
+            //                             ->send();
+            //                     }
+            //                 }),
+            //         BulkAction::make('markCancelled')
+            //             ->label('Отменён')
+            //             ->icon('fas-xmark')
+            //             ->color('danger')
+            //             ->requiresConfirmation()
+            //             ->action(function (Collection $records) {
+            //                 if ($records->every(fn ($record) => $record->status_id == 1)) {
+            //                     foreach ($records as $record) {
+            //                         $record->update(['status_id' => 4]); // 4 - active
+                            
+            //                         // Foydalanuvchiga navbat raqami yuborish
+            //                         $customer = Customer::find($record->customer_id);
+            //                         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
+            //                         $telegram->sendMessage([
+            //                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
+            //                             'text' => "❌ Сизиң дизимнен өтиў сораўыңыз бийкар етилди!",
+            //                         ]);
+            //                     }
+                    
+            //                     Notification::make()
+            //                         ->title('Statuslar muvaffaqiyatli yangilandi!')
+            //                         ->success()
+            //                         ->send();
+            //                 } else {
+            //                     Notification::make()
+            //                         ->title('Faqat Active (1) statusdagi yozuvlarni tanlang!')
+            //                         ->danger()
+            //                         ->send();
+            //                 }
+            //             }),
+            //     ]),
+                
+            // ]);
     }
     public static function getNavigationBadge(): ?string
     {
