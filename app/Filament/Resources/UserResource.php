@@ -86,7 +86,10 @@ class UserResource extends Resource
                 ]),
             ]);
     }
-
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     public static function getRelations(): array
     {
         return [

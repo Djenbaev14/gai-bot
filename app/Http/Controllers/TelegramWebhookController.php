@@ -24,8 +24,13 @@ class TelegramWebhookController extends Controller
     {
         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
         $update = $telegram->getWebhookUpdate();
-
-        $text = $update->getMessage()?->getText();
+        
+        if ($update->getMessage() instanceof \Telegram\Bot\Objects\Message) {
+            $text = $update->getMessage()->getText();
+        } else {
+            // Xato yoki kerakli obyekt topilmadi
+            $text = null;
+        }
         $message = $update->getMessage();
         $chatId = $message?->getChat()?->id;
         if (!$chatId) return;
