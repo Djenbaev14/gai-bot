@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('queue_numbers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->default(1);
+            $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedBigInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->unsignedBigInteger('gay_application_id');
             $table->foreign('gay_application_id')->references('id')->on('gay_applications')->onDelete('cascade');
-            $table->unsignedBigInteger('branch_id')->default(1); // qo‘shildi
+            $table->unsignedBigInteger('branch_id');
             $table->foreign('branch_id')->references('id')->on('branches'); // tashqi kalit
 
             $table->integer('queue_number');

@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('gay_applications', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('branch_id')->default(1);
+            $table->unsignedBigInteger('branch_id');
             $table->foreign('branch_id')->references('id')->on('branches');
-            $table->unsignedBigInteger('region_id')->default(8);
+            $table->unsignedBigInteger('region_id');
             $table->foreign('region_id')->references('id')->on('regions');
             $table->unsignedBigInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('customers');
