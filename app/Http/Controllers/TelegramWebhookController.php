@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Console\Commands\StartCommand;
 use App\Models\Branch;
 use App\Models\BranchRegion;
 use App\Models\Customer;
@@ -48,7 +49,10 @@ class TelegramWebhookController extends Controller
             Cache::forget("user:{$chatId}:passport");
             Cache::forget("user:{$chatId}:step");
             Cache::forget("user:{$chatId}:id");
+            Cache::forget("user:{$chatId}:number");
             Cache::forget("user:{$chatId}:fileName");
+            Cache::forget("user:{$chatId}:region");
+            Cache::forget("user:{$chatId}:branch");
 
             $keyboard = Keyboard::make()
                 ->setResizeKeyboard(true)
@@ -64,7 +68,13 @@ class TelegramWebhookController extends Controller
                 'reply_markup' => $keyboard,
             ]);
         }
-
+        if ($text === '/start') {
+            $command = new StartCommand();
+            $command->makeTelegram($telegram);
+            $command->makeUpdate($update);
+            $command->handle();
+            return;
+        }
         // 2. Navbatni korish
         if ($text === '📋 Наўбетти тексериў') {
 
@@ -303,6 +313,8 @@ class TelegramWebhookController extends Controller
             Cache::forget("user:{$chatId}:fileName");
             Cache::forget("user:{$chatId}:number");
             Cache::forget("user:{$chatId}:id");
+            Cache::forget("user:{$chatId}:region");
+            Cache::forget("user:{$chatId}:branch");
             $keyboard = Keyboard::make()
                 ->setResizeKeyboard(true)
                 ->setOneTimeKeyboard(false)
@@ -327,6 +339,8 @@ class TelegramWebhookController extends Controller
             Cache::forget("user:{$chatId}:fileName");
             Cache::forget("user:{$chatId}:number");
             Cache::forget("user:{$chatId}:id");
+            Cache::forget("user:{$chatId}:region");
+            Cache::forget("user:{$chatId}:branch");
             $keyboard = Keyboard::make()
                 ->setResizeKeyboard(true)
                 ->setOneTimeKeyboard(false)
@@ -342,7 +356,6 @@ class TelegramWebhookController extends Controller
             ]);
             
         }
-
         Telegram::commandsHandler(true);
         return 'ok';
     }
