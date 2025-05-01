@@ -93,15 +93,15 @@ class CustomerResource extends Resource
     }
     public static function getNavigationLabel(): string
     {
-        return 'Пользователь '; // Rus tilidagi nom
+        return 'Пухаралар'; // Rus tilidagi nom
     }
     public static function getModelLabel(): string
     {
-        return 'Пользователь'; // Rus tilidagi yakka holdagi nom
+        return 'Пухаралар'; // Rus tilidagi yakka holdagi nom
     }
     public static function getPluralModelLabel(): string
     {
-        return 'Пользователь '; // Rus tilidagi ko'plik shakli
+        return 'Пухаралар '; // Rus tilidagi ko'plik shakli
     }
 
     public static function getPages(): array

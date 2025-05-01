@@ -18,6 +18,7 @@ class User extends Authenticatable implements FilamentUser
      *
      * @var array<int, string>
      */
+    
     protected $guarded = ['id'];
 
     /**
@@ -31,6 +32,9 @@ class User extends Authenticatable implements FilamentUser
     protected $casts = [
         'password' => 'hashed',
     ];
+    public function branch(){
+        return $this->belongsTo(Branch::class);
+    }
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
         // Faqat admin paneliga kirishga ruxsat
