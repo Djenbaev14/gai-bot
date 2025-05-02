@@ -66,39 +66,14 @@ class SendBroadcastNotification
                                 'chat_id' => $customer->telegram_user_id,
                                 'text' => $data['message'],
                             ]);
-                            usleep(500000); // 0.4 soniya kutish
+                            usleep(200000); 
                         }  catch (\Throwable $th) {
-                                    $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
                                     $telegram->sendMessage([
                                         'chat_id' => env('TELEGRAM_MY_CHAT_ID'),
                                         'text' => $th->getMessage() . ' on line ' . $th->getLine() . ' in ' . $th->getFile()
                                     ]);
                         }
                 }
-                // foreach ($applications as $application) {
-                //     $customer = $application->customer;
-            
-                //     if (!$customer || !$customer->telegram_user_id) {
-                //         continue;
-                //     }
-            
-                //     try {
-                //         $telegram->sendMessage([
-                //             'chat_id' => $customer->telegram_user_id,
-                //             'text' => $data['message'],
-                //         ]);
-            
-                //         usleep(500000); // 0.5 soniya delay — spamdan saqlanish uchun
-            
-                //     } catch (\Throwable $th) {
-                //         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-                //         $telegram->sendMessage([
-                //             'chat_id' => env('TELEGRAM_MY_CHAT_ID'),
-                //             'text' => $th->getMessage() . ' on line ' . $th->getLine() . ' in ' . $th->getFile()
-                //         ]);
-                //     }
-                // }
-            
                 Notification::make()
                     ->title('Xabar muvaffaqiyatli yuborildi!')
                     ->success()
