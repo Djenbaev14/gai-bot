@@ -46,6 +46,9 @@ class SendBroadcastNotification
                 
                 $queueNumbers = QueueNumber::with(['customer'])
                     ->where('branch_id', $data['branch_id']) // Agar kerak bo‘lsa
+                    ->whereHas('application', function ($query) {
+                        $query->where('status_id', 2);
+                    })
                     ->orderBy('queue_number')
                     ->limit($data['limit'])
                     ->get();
