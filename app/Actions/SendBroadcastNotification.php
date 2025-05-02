@@ -54,7 +54,6 @@ class SendBroadcastNotification
                     ->orderBy('queue_number')
                     ->limit($data['limit'])
                     ->get();
-                    Log::info($queueNumbers);
 
                 foreach ($queueNumbers as $item) {
                         $customer = $item->application?->customer;
