@@ -86,6 +86,8 @@ class TelegramWebhookController extends Controller
     
                 $customer = Customer::where('telegram_user_id','=',$chatId)->first();
                 $myQueue=GayApplication::where('customer_id',$customer->id)->where('status_id',2)->latest()->first();
+                $CompletedMyQueue=GayApplication::where('customer_id',$customer->id)->where('status_id',4)->latest()->first();
+                $CancelledMyQueue=GayApplication::where('customer_id',$customer->id)->where('status_id',5)->latest()->first();
                 
                 if($myQueue){
                     $lastQueue = GayApplication::where('branch_id',$myQueue->branch_id)->whereHas('status', function (Builder $query) {
@@ -110,6 +112,20 @@ class TelegramWebhookController extends Controller
                     $telegram->sendMessage([
                         'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
                         'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n❗️Тест тапсырыу орныныз: $myQueue->branch_name\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,3,5 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
+                    ]);
+                }elseif ($CompletedMyQueue) {
+                    $CompletedMyQueueNumber=$CompletedMyQueue->queueNumber->queue_number;
+                    $active="✅ Сиз тестке кирип шыктыныз набетиниз №$CompletedMyQueueNumber еди";
+                    $telegram->sendMessage([
+                        'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
+                        'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n$active\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,3,5 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
+                    ]);
+                }elseif ($CancelledMyQueue) {
+                    $CancelledMyQueueNumber=$CancelledMyQueue->queueNumber->queue_number;
+                    $active="⭕️ Сиз тестке келмединиз науюетиниз №$CancelledMyQueueNumber еди";
+                    $telegram->sendMessage([
+                        'chat_id' => $chatId, // Foydalanuvchining chat_id sini olish
+                        'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n$active\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,3,5 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
                     ]);
                 }else{
                     $active='⭕️ Сизде актив наубет жок';
