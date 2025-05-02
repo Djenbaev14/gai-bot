@@ -43,20 +43,15 @@ class SendBroadcastNotification
             ])
             ->action(function (array $data) {
                 $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-                // $applications = GayApplication::with('customer')
-                // ->where('branch_id', $data['branch_id'])
-                // ->where('status_id', 2)
-                // ->limit($data['limit']) // xavfsizlik uchun limit
-                // ->get();
                 
-                $queueNumbers = QueueNumber::with(['application.customer'])
+                $queueNumbers = QueueNumber::with(['customer'])
                     ->where('branch_id', $data['branch_id']) // Agar kerak bo‘lsa
                     ->orderBy('queue_number')
                     ->limit($data['limit'])
                     ->get();
 
                 foreach ($queueNumbers as $item) {
-                        $customer = $item->application?->customer;
+                        $customer = $item->customer;
                 
                         if (!$customer || !$customer->telegram_user_id) continue;
                 
@@ -65,7 +60,7 @@ class SendBroadcastNotification
                                 'chat_id' => $customer->telegram_user_id,
                                 'text' => $data['message'],
                             ]);
-                            usleep(200000); 
+                            // usleep(200000); 
                         }  catch (\Throwable $th) {
                                     $telegram->sendMessage([
                                         'chat_id' => env('TELEGRAM_MY_CHAT_ID'),
