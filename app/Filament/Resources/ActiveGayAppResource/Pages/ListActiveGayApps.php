@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ActiveGayAppResource\Pages;
 
+use App\Actions\SendBroadcastNotification;
 use App\Filament\Resources\ActiveGayAppResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -13,7 +14,8 @@ class ListActiveGayApps extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            SendBroadcastNotification::make(),
         ];
     }
+    
 }
