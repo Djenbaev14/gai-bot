@@ -55,15 +55,12 @@ class ActiveGayAppResource extends Resource
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
+                ImageColumn::make('document_path')
+                    ->label('Квитанция')
+                    ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
                 TextColumn::make('region.name')
                     ->label('Район')
                     ->searchable(),
-                // ImageColumn::make('document_path')
-                //     ->label('Квитанция')
-                //     ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
-                // TextColumn::make('branch.name')
-                //     ->label('Филиаль')
-                //     ->searchable(),
                 TextColumn::make('created_at')
                     ->label('Дата')
                     ->dateTime('d.m.Y H:i'), // Misol: 29.04.2025 15:42

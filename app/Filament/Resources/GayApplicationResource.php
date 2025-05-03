@@ -21,6 +21,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
@@ -75,9 +76,9 @@ class GayApplicationResource extends Resource
                     ->where('status_id',1) 
             )
             ->columns([
-                Tables\Columns\ImageColumn::make('document_path')
-                ->label('Квитанция')
-                ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
+                ImageColumn::make('document_path')
+                    ->label('Квитанция')
+                    ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
                 TextColumn::make('branch.name')
                     ->label('Филиаль')
                     ->searchable(),
