@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CancelledAppResource\Pages;
-use App\Filament\Resources\CancelledAppResource\RelationManagers;
-use App\Models\CancelledApp;
+use App\Filament\Resources\ChangeGayApplicationResource\Pages;
+use App\Filament\Resources\ChangeGayApplicationResource\RelationManagers;
+use App\Models\ChangeGayApplication;
 use App\Models\GayApplication;
-use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -17,11 +16,12 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class CancelledAppResource extends Resource
+class ChangeGayApplicationResource extends Resource
 {
     protected static ?string $model = GayApplication::class;
-    protected static ?int $navigationSort = 5;
-    protected static ?string $navigationGroup = 'Очередь';
+
+    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
@@ -38,12 +38,15 @@ class CancelledAppResource extends Resource
                 GayApplication::query()
                     ->where('branch_id',auth()->user()->branch_id)
                     ->where('status_id',4) 
-                    ->whereDoesntHave('queueNumber')
+                    ->whereHas('queueNumber')
             )
             ->columns([
                 ImageColumn::make('document_path')
                     ->label('Квитанция')
                     ->simpleLightbox(fn ($record) =>  $record?->document_path ?? "Your Image Url address", defaultDisplayUrl: true),
+                TextColumn::make('queueNumber.queue_number')
+                    ->label('Номер')
+                    ->searchable(),
                 TextColumn::make('customer.full_name')
                     ->label('ФИО')
                     ->searchable(),
@@ -63,7 +66,7 @@ class CancelledAppResource extends Resource
     }
     public static function getNavigationBadge(): ?string
     {
-        return (string) GayApplication::where('branch_id',auth()->user()->branch_id)->whereDoesntHave('queueNumber')->where('status_id', 4)->count();
+        return (string) GayApplication::where('branch_id',auth()->user()->branch_id)->whereHas('queueNumber')->where('status_id', 4)->count();
     }
     public static function getNavigationBadgeColor(): ?string
     {
@@ -77,23 +80,23 @@ class CancelledAppResource extends Resource
     }
     public static function getNavigationLabel(): string
     {
-        return 'Отмененный'; // Rus tilidagi nom
+        return 'Изменившие место теста'; // Rus tilidagi nom
     }
     public static function getModelLabel(): string
     {
-        return 'Отмененный'; // Rus tilidagi yakka holdagi nom
+        return 'Изменившие место теста'; // Rus tilidagi yakka holdagi nom
     }
     public static function getPluralModelLabel(): string
     {
-        return 'Отмененный'; // Rus tilidagi ko'plik shakli
+        return 'Изменившие место теста'; // Rus tilidagi ko'plik shakli
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCancelledApps::route('/'),
-            'create' => Pages\CreateCancelledApp::route('/create'),
-            'edit' => Pages\EditCancelledApp::route('/{record}/edit'),
+            'index' => Pages\ListChangeGayApplications::route('/'),
+            'create' => Pages\CreateChangeGayApplication::route('/create'),
+            'edit' => Pages\EditChangeGayApplication::route('/{record}/edit'),
         ];
     }
 }
