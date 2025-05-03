@@ -68,7 +68,7 @@ class NoShowsGayApplicationResource extends Resource
     }
     public static function getNavigationBadge(): ?string
     {
-        return (string) GayApplication::where('branch_id',auth()->user()->branch_id)->whereHas('queueNumber')->where('status_id', 4)->count();
+        return (string) GayApplication::where('branch_id',auth()->user()->branch_id)->where('status_id', 5)->count();
     }
     public static function getNavigationBadgeColor(): ?string
     {
