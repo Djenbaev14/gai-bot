@@ -20,7 +20,7 @@ class ChangeGayApplicationResource extends Resource
 {
     protected static ?string $model = GayApplication::class;
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
     protected static ?string $navigationGroup = 'Очередь';
 
     public static function form(Form $form): Form
@@ -36,9 +36,12 @@ class ChangeGayApplicationResource extends Resource
         return $table
             ->query(
                 GayApplication::query()
-                    ->where('branch_id',auth()->user()->branch_id)
-                    ->where('status_id',4) 
+                    ->where('gay_applications.branch_id',auth()->user()->branch_id)
+                    ->where('status_id', 4)
                     ->whereHas('queueNumber')
+                    ->join('queue_numbers', 'queue_numbers.gay_application_id', '=', 'gay_applications.id')
+                    ->orderBy('queue_numbers.queue_number', 'asc')
+                    ->select('gay_applications.*')
             )
             ->columns([
                 ImageColumn::make('document_path')

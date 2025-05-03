@@ -45,7 +45,7 @@ class CompletedGayAppResource extends Resource
                     ->where('gay_applications.branch_id',auth()->user()->branch_id)
                     ->where('status_id', 3)
                     ->join('queue_numbers', 'queue_numbers.gay_application_id', '=', 'gay_applications.id')
-                    ->orderBy('queue_numbers.queue_number', 'desc')
+                    ->orderBy('queue_numbers.queue_number', 'asc')
                     ->select('gay_applications.*')
             )
             ->columns([
