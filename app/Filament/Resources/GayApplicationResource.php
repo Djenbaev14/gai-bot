@@ -90,7 +90,7 @@ class GayApplicationResource extends Resource
                     ->dateTime('d.m.Y H:i'), // Misol: 29.04.2025 15:42
             ])
             ->defaultSort('created_at','asc')
-            ->defaultPaginationPageOption(25)
+            ->defaultPaginationPageOption(50)
             ->actions([
                 Action::make('active')
                     ->label('')

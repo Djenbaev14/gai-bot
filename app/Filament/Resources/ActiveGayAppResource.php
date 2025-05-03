@@ -65,7 +65,7 @@ class ActiveGayAppResource extends Resource
                     ->label('Дата')
                     ->dateTime('d.m.Y H:i'), // Misol: 29.04.2025 15:42
             ])
-            ->defaultPaginationPageOption(25)
+            ->defaultPaginationPageOption(50)
             ->actions([
                 Action::make('active')
                     ->label('')
