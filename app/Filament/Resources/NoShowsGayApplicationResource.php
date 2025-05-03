@@ -82,15 +82,15 @@ class NoShowsGayApplicationResource extends Resource
     }
     public static function getNavigationLabel(): string
     {
-        return 'Изменившие место теста'; // Rus tilidagi nom
+        return 'Пропустившие тест'; // Rus tilidagi nom
     }
     public static function getModelLabel(): string
     {
-        return 'Изменившие место теста'; // Rus tilidagi yakka holdagi nom
+        return 'Пропустившие тест'; // Rus tilidagi yakka holdagi nom
     }
     public static function getPluralModelLabel(): string
     {
-        return 'Изменившие место теста'; // Rus tilidagi ko'plik shakli
+        return 'Пропустившие тест'; // Rus tilidagi ko'plik shakli
     }
 
     public static function getPages(): array
