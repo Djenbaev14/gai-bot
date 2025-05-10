@@ -2,9 +2,11 @@
 
 namespace App\Actions;
 
+use App\Jobs\SendTelegramMessage;
 use App\Models\Branch;
 use App\Models\GayApplication;
 use App\Models\QueueNumber;
+use App\Models\TelegramMessage;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -31,10 +33,6 @@ class SendBroadcastNotification
                         ->required()
                         ->searchable()
                         ->columnSpan(6),
-                    TextInput::make('limit')
-                        ->label('Неше адамга жибериу крк')
-                        ->required()
-                        ->columnSpan(6),
                     Textarea::make('message')
                         ->label('Хабар жибериу')
                         ->required()
@@ -42,39 +40,33 @@ class SendBroadcastNotification
                 ])->columns(12)->columnSpan(12)
             ])
             ->action(function (array $data) {
-                $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
-                
+                TelegramMessage::create([
+                    'message' => $data['message'],
+                ]);
+
                 $queueNumbers = QueueNumber::with(['customer'])
                     ->where('branch_id', $data['branch_id']) // Agar kerak bo‘lsa
                     ->whereHas('application', function ($query) {
                         $query->where('status_id', 2);
                     })
                     ->orderBy('queue_number')
-                    ->limit($data['limit'])
                     ->get();
 
-                foreach ($queueNumbers as $item) {
+                foreach ($queueNumbers as $index => $item) {
                         $customer = $item->customer;
                 
                         if (!$customer || !$customer->telegram_user_id) continue;
                 
-                        try {
-                            $telegram->sendMessage([
-                                'chat_id' => $customer->telegram_user_id,
-                                'text' => $data['message'],
-                            ]);
-                            // usleep(200000); 
-                        }  catch (\Throwable $th) {
-                                    $telegram->sendMessage([
-                                        'chat_id' => env('TELEGRAM_MY_CHAT_ID'),
-                                        'text' => $th->getMessage() . ' on line ' . $th->getLine() . ' in ' . $th->getFile()
-                                    ]);
-                        }
+                        SendTelegramMessage::dispatch(
+                            $customer->telegram_user_id,
+                            $data['message']
+                        )->delay(now()->addSeconds($index * 5)); // har biri 3 soniya oraliqda
                 }
+                
                 Notification::make()
-                    ->title('Xabar muvaffaqiyatli yuborildi!')
-                    ->success()
-                    ->send();
+                ->title('Xabarlar yuborilmoqda ...')
+                ->success()
+                ->send();
 
             });
     }
