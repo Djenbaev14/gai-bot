@@ -31,6 +31,7 @@ class SendTelegramMessage implements ShouldQueue
             $telegram->sendMessage([
                 'chat_id' => $this->chatId,
                 'text' => $this->message,
+                'parse_mode' => 'HTML'
             ]);
         } catch (\Throwable $th) {
             \Log::error('Telegram send failed: ' . $th->getMessage());

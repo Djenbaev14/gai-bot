@@ -136,7 +136,8 @@ class GayApplicationResource extends Resource
             
                         $telegram->sendMessage([
                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                            'text' => "📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nТест тапсырыу орныныз: $record->branch_name\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,3,5 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy",
+                            'text' => "<blockquote> 📱 Телефон:$customer->phone_number\n👤 ФИО:$customer->full_name\n🆔 Паспорт:$customer->passport\n\n\n⭕️ Сиздиң наўбет:  № $myQueueNumber\n\n$lastQueueText\n$waiting\n\nТест тапсырыу орныныз: $record->branch_name\n\nКүнине орташа 300-400 пуҳара имтихан тапсырыўга улгереди !\n\nИмтиҳанлар  саат 09:00 – 18:00  , хәптениң 1,3,5 күнлери болып өтеди \n\nЖаңалықлардан хабардар болыў ушын каналға кириң\n 👉 https://t.me/+oR4I260MLxszYTAy </blockquote>",
+                            'parse_mode' => 'HTML'
                         ]);
 
                         Notification::make()
@@ -167,7 +168,8 @@ class GayApplicationResource extends Resource
                         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
                         $telegram->sendMessage([
                             'chat_id' => $customer->telegram_user_id, // Foydalanuvchining chat_id sini olish
-                            'text' => "❌ Сизиң дизимнен өтиў сораўыңыз бийкар етилди!\n\n".$data['comment'],
+                            'text' => "<blockquote> ❌ Сизиң дизимнен өтиў сораўыңыз бийкар етилди!\n\n".$data['comment']."</blockquote>",
+                            'parse_mode' => 'HTML'
                         ]);
                             Notification::make()
                             ->title('Сизиң дизимнен өтиў сораўыңыз бийкар етилди')
