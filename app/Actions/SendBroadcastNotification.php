@@ -41,14 +41,15 @@ class SendBroadcastNotification
             ])
             ->action(function (array $data) {
                 TelegramMessage::create([
+                    'branch_id' => $data['branch_id'],
                     'message' => $data['message'],
                 ]);
 
                 $queueNumbers = QueueNumber::with(['customer'])
                     ->where('branch_id', $data['branch_id']) // Agar kerak bo‘lsa
-                    ->whereHas('application', function ($query) {
-                        $query->where('status_id', 2);
-                    })
+                    // ->whereHas('application', function ($query) {
+                    //     $query->where('status_id', 2);
+                    // })
                     ->orderBy('queue_number')
                     ->get();
 
@@ -60,7 +61,7 @@ class SendBroadcastNotification
                         SendTelegramMessage::dispatch(
                             $customer->telegram_user_id,
                             $data['message']
-                        )->delay(now()->addSeconds($index * 5)); // har biri 3 soniya oraliqda
+                        )->delay(now()->addSeconds( 3)); // har biri 3 soniya oraliqda
                 }
                 
                 Notification::make()
