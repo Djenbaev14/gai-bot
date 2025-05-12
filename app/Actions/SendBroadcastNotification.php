@@ -45,16 +45,9 @@ class SendBroadcastNotification
                     'message' => $data['message'],
                 ]);
 
-                $queueNumbers = QueueNumber::with(['customer'])
-                    ->where('branch_id', $data['branch_id']) // Agar kerak bo‘lsa
-                    // ->whereHas('application', function ($query) {
-                    //     $query->where('status_id', 2);
-                    // })
-                    ->orderBy('queue_number')
-                    ->get();
+                $customers=Customer::where('branch_id',$data['branch_id'])->get();
 
-                foreach ($queueNumbers as $index => $item) {
-                        $customer = $item->customer;
+                foreach ($customers as $index => $customer) {
                 
                         if (!$customer || !$customer->telegram_user_id) continue;
                 
