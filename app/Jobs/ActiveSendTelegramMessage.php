@@ -7,6 +7,7 @@ use App\Models\GayApplication;
 use App\Models\QueueNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -49,8 +50,13 @@ class ActiveSendTelegramMessage implements ShouldQueue
 
         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
 
-        $lastQueueNumber = QueueNumber::where('branch_id', $record->branch_id)->max('queue_number');
+        // $lastQueueNumber = QueueNumber::where('branch_id', $record->branch_id)->max('queue_number');
 
+        $lastQueue = GayApplication::where('branch_id', $record->branch_id)
+                            ->whereHas('status', function (Builder $query) {
+                                $query->where('key', '=', 'completed');
+                            })->latest()->first();
+        $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
         $waitingCount = GayApplication::whereHas('status', fn ($q) => $q->where('key', 'active'))
             ->whereHas('queueNumber', function ($q) use ($lastQueueNumber, $myQueueNumber) {
                 $q->where('queue_number', '>', $lastQueueNumber)
