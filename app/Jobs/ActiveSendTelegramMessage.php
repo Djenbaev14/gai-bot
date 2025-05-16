@@ -49,11 +49,7 @@ class ActiveSendTelegramMessage implements ShouldQueue
 
         $telegram = new Api(env('TELEGRAM_BOT_TOKEN'));
 
-        $lastQueue = GayApplication::whereHas('status', fn ($q) => $q->where('key', 'completed'))
-            ->latest()
-            ->first();
-
-        $lastQueueNumber = $lastQueue?->queueNumber?->queue_number ?? 0;
+        $lastQueueNumber = QueueNumber::where('branch_id', $record->branch_id)->max('queue_number');
 
         $waitingCount = GayApplication::whereHas('status', fn ($q) => $q->where('key', 'active'))
             ->whereHas('queueNumber', function ($q) use ($lastQueueNumber, $myQueueNumber) {
