@@ -45,6 +45,14 @@ class TelegramWebhookController extends Controller
     
             // 1. Telefon yuborgan bo'lsa
             if ($message->has('contact')) {
+                $contactUserId = $message->contact->user_id ?? null; 
+
+                if ($contactUserId !== $message->from->id) {
+                    return $telegram->sendMessage([
+                        'chat_id' => $chatId,
+                        'text' => '❗️ Илтимас, "Контакт жибериў" түймесинен пайдаланың. Басқа адамның номерин жибермең.',
+                    ]);
+                }
                 $phone = $message->contact->phone_number;
                 Customer::updateOrCreate(
                     ['telegram_user_id' => $chatId],
